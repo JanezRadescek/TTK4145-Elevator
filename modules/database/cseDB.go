@@ -6,11 +6,14 @@ import (
 	"../commons"
 )
 
-func start(
+//StartCSEDB starts thread save data base for CSE
+func StartCSEDB(
 	cse <-chan commons.Message,
 	requestCopy <-chan bool,
-	sendCopy chan<- []commons.Elevator) {
+	sendCopy chan<- map[string]commons.Elevator,
+) {
 
+	//key elevators ID, value elvator
 	elevators := make(map[string]commons.Elevator)
 
 	for {
@@ -18,13 +21,13 @@ func start(
 		select {
 		case tempM := <-cse:
 			{
-				fmt.Println("TODO ", tempM)
-				tempID := tempM.SenderIP + tempM.SenderPROCES
-				elevators[tempID] = commons.StringToElevator(tempM.Text)
+				tempID := tempM.SenderIP + ":" + tempM.SenderProcessID
+				fmt.Println("Got update from ", tempID)
+				elevators[tempID] = tempM.Elevator
 			}
 		case <-requestCopy:
 			{
-				//sendCopy
+				sendCopy <- elevators
 			}
 		}
 	}
