@@ -2,15 +2,18 @@ package commons
 
 import "time"
 
+//What is enum
+type What int
+
+//posible values of what
 const (
-	//Kill enum for What
-	Kill = "KILL"
-	//Spawn enum for What
-	Spawn = "SPAWN"
-	//Cse enum for What
-	Cse = "CSE"
-	//Local enum for What
-	Local = "LOCAL"
+	Kill What = 1 + iota
+	Spawn
+	Kick
+	CSE
+	LocalCSE //Its convient to use same "road" as if someone else send us CSE.
+	OrderChange
+	LocalOrder
 )
 
 //Message is used for communication betwen modules and nodes.
@@ -24,7 +27,7 @@ type Message struct {
 	//id           int //Simpler id
 	SenderIP        string
 	SenderProcessID string
-	What            string
+	What            What
 	Elevator        Elevator
 	Order           Order
 }
@@ -42,7 +45,10 @@ type Elevator struct {
 
 //Order stores all relevant info
 type Order struct {
-	Floor      int
-	Direction  int
-	Contractor string //ID of elevator responsible for this order
+	Progres       int
+	StartingFloor int
+	StartingTime  time.Time //time when **buttom** what pressed
+	Direction     int       //acourding to pressed buttom
+	EndingFloor   int
+	Contractor    string //ID of elevator responsible for this order
 }

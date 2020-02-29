@@ -2,31 +2,36 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"../commons"
 )
 
 //StartOrdersDB starts thread save data base for orders
 func StartOrdersDB(
-	ID string,
-	order <-chan commons.Message,
-	requestCopy <-chan bool,
-	sendCopy chan<- map[string]commons.Order,
+	newOrder <-chan commons.Message,
+	deleteOrder <-chan commons.Order,
+	requestedCopy <-chan bool,
+	sendCopy chan<- map[commons.Order]time.Time,
 ) {
 
-	//key ID of contractor , value order
-	orders := make(map[string]commons.Order)
+	//key order , value time of last update
+	orders := make(map[commons.Order]time.Time)
 
 	for {
 		//to prevent race conditions we allways finish case before going into new loop. No go function here.
 		select {
-		case tempM := <-order:
+		case tempM := <-newOrder:
 			{
-				tempID := tempM.SenderIP + ":" + tempM.SenderProcessID
 				fmt.Println("Got order")
-				orders[tempID] = tempM.Order
+				//TODO check if it is order in progress
+				orders[tempM.Order] = time.Now()
 			}
-		case <-requestCopy:
+		case tempO := <-deleteOrder:
+			{
+				delete(orders, tempO)
+			}
+		case <-requestedCopy:
 			{
 				sendCopy <- orders
 			}
