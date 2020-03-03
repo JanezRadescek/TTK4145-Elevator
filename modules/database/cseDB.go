@@ -7,15 +7,17 @@ import (
 	"../commons"
 )
 
+const elevatorTimeOut int = 10 //10s
+
 //StartCSEDB starts thread save data base for CSE
 func StartCSEDB(
-	cse <-chan commons.Message,
+	cse <-chan commons.MessageStruct,
 	requestCopy <-chan bool,
-	sendCopy chan<- map[string]commons.Elevator,
+	sendCopy chan<- map[string]commons.ElevatorStruct,
 ) {
 
 	//key elevators ID, value elvator
-	elevators := make(map[string]commons.Elevator)
+	elevators := make(map[string]commons.ElevatorStruct)
 
 	deleteOfflineElevators := make(chan bool)
 	go func() {
@@ -36,7 +38,13 @@ func StartCSEDB(
 			}
 		case <-deleteOfflineElevators:
 			{
-				//TODO delete elevators that are ofline for longer than 30s
+				tempT := time.Now()
+				tempT.Add(time.Duration(-elevatorTimeOut))
+				for tempID, tempE := range elevators {
+					if tempE.LastTimeOnline.Before(tempT) {
+						delete(elevators, tempID)
+					}
+				}
 			}
 		case <-requestCopy:
 			{

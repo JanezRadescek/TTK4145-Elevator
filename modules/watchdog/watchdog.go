@@ -14,9 +14,9 @@ const maxTime int = 30    //30s
 func StartWatchDog(
 	ID string,
 	requestCopy chan<- bool,
-	reciveCopy <-chan map[commons.Order]time.Time,
-	sendMessege chan<- commons.Message,
-	sendOurOrder chan<- commons.Order,
+	reciveCopy <-chan map[int]commons.OrderStruct,
+	sendMessege chan<- commons.MessageStruct,
+	sendCopy chan<- map[int]commons.OrderStruct,
 ) {
 
 	for {
@@ -25,19 +25,11 @@ func StartWatchDog(
 		requestCopy <- true
 		tempOrders := <-reciveCopy
 
-		tempT := time.Now()
+		curentTime := time.Now()
 
-		var oldestOurOrder commons.Order
-		var oldestTime time.Time = tempT
-
-		for order, ordersTime := range tempOrders {
-			if ID == order.Contractor && ordersTime.Before(oldestTime) {
-				oldestTime = ordersTime
-				oldestOurOrder = order
-			}
-
-			ordersTime = ordersTime.Add(time.Duration(maxTime) * time.Second)
-			if ordersTime.Before(tempT) {
+		for _, order := range tempOrders {
+			tempT := order.StartingTime.Add(time.Duration(maxTime) * time.Second)
+			if tempT.Before(curentTime) {
 
 				//TODO kick vote
 
@@ -45,18 +37,20 @@ func StartWatchDog(
 				tempIP := tempID[0]
 				tempProcessID := tempID[1]
 
-				tempM1 := commons.Message{
+				tempM1 := commons.MessageStruct{
 					SenderIP:        tempIP,
 					SenderProcessID: tempProcessID,
-					What:            commons.LocalCSE,
-					Elevator:        commons.Elevator{Operational: false},
+					What:            commons.CSE,
+					Local:           true,
+					Elevator:        commons.ElevatorStruct{Operational: false},
 				}
 				sendMessege <- tempM1
 
-				tempM2 := commons.Message{
+				tempM2 := commons.MessageStruct{
 					SenderIP:        tempIP,
 					SenderProcessID: tempProcessID,
-					What:            commons.LocalOrder,
+					What:            commons.Order,
+					Local:           true,
 					Order:           order,
 				}
 				sendMessege <- tempM2
@@ -66,7 +60,15 @@ func StartWatchDog(
 			}
 		}
 		if oldestOurOrder.Contractor != "" {
-			sendOurOrder <- oldestOurOrder
+			sendOurOrder <- tempOrders
 		}
 	}
 }
+
+// func updateElevatorDB() {
+
+// }
+
+// func updateOrderDB() {
+
+// }

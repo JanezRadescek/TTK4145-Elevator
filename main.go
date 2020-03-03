@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"./modules/commons"
 	"./modules/database"
@@ -18,17 +17,17 @@ func main() {
 	//create graph
 
 	//edges
-	network2CSE := make(chan commons.Message)
+	network2CSE := make(chan commons.MessageStruct)
 	headhunter2CSE := make(chan bool)
-	CSE2headhunter := make(chan map[string]commons.Elevator)
+	CSE2headhunter := make(chan map[string]commons.ElevatorStruct)
 
-	headhunter2orders := make(chan commons.Message)
-	driver2Orders := make(chan commons.Order)
+	headhunter2orders := make(chan commons.MessageStruct)
+	driver2Orders := make(chan commons.OrderStruct)
 	watchdog2orders := make(chan bool)
-	orders2watchdog := make(chan map[commons.Order]time.Time)
+	orders2watchdog := make(chan map[int]commons.OrderStruct)
 
-	watchdog2network := make(chan commons.Message)
-	watchdog2driver := make(chan commons.Order)
+	watchdog2network := make(chan commons.MessageStruct)
+	watchdog2driver := make(chan commons.OrderStruct)
 
 	//vertices
 	database.StartCSEDB(
@@ -39,7 +38,6 @@ func main() {
 
 	database.StartOrdersDB(
 		headhunter2orders,
-		driver2Orders,
 		watchdog2orders,
 		orders2watchdog,
 	)
