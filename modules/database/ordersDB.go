@@ -8,34 +8,37 @@ import (
 
 //StartOrdersDB starts thread save data base for orders
 func StartOrdersDB(
-	order <-chan commons.MessageStruct,
+	reciveOrder <-chan commons.OrderStruct,
 	requestedCopy <-chan bool,
-	sendCopy chan<- map[int]commons.OrderStruct,
+	sendCopy chan<- map[string]commons.OrderStruct,
 ) {
-
-	//key order , value time of last update
-	orders := make(map[int]commons.OrderStruct)
-	IDcounter := 1
+	orders := make(map[string]commons.OrderStruct)
 
 	for {
 		//to prevent race conditions we allways finish case before going into new loop. No go function here.
 		select {
-		case tempM := <-order:
+		case order := <-reciveOrder:
 			{
 				fmt.Println("Got order")
 
-				tempO := tempM.Order
-
-				if _, ok := orders[tempO.ID]; ok {
-					if tempO.Progress == commons.ClosingDoor2 {
-						delete(orders, tempO.ID)
+				if _, ok := orders[order.ID]; ok {
+					if order.Progress == commons.ClosingDoor2 {
+						delete(orders, order.ID)
 					} else {
-						orders[tempO.ID] = tempO
+						orders[order.ID] = order
 					}
 				} else {
-					tempO.ID = IDcounter
-					orders[IDcounter] = tempO
-					IDcounter++
+					unique := true
+					for _, tempO := range orders {
+						if tempO.DestinationFloor == order.DestinationFloor && order.Progress <= 3 {
+							unique = false
+							break
+						}
+					}
+					if unique {
+						orders[order.ID] = order
+					}
+
 				}
 			}
 		case <-requestedCopy:

@@ -33,14 +33,12 @@ type MessageStruct struct {
 
 //ElevatorStruct stores all relevant info.
 type ElevatorStruct struct {
-	//IP             string
-	//Proces         string
+	ID                string
 	LastTimeOnline    time.Time
 	Operational       bool
 	CurentFloor       int
 	CurentDestination int
-	Door              int
-	Lamp              int
+	Idle              bool
 }
 
 //OrderProgress is enum
@@ -48,11 +46,11 @@ type OrderProgress int
 
 //posible values of OrderProgress
 const (
-	ButtomPressed OrderProgress = 1 + iota
+	ButtonPressed OrderProgress = 1 + iota
 	Moving2customer
 	OpeningDoor1
 	ClosingDoor1
-	DestinationChosen
+	WaitingForDestination
 	Moving2destination
 	OpeningDoor2
 	ClosingDoor2
@@ -60,11 +58,10 @@ const (
 
 //OrderStruct stores all relevant info
 type OrderStruct struct {
-	ID               int //only used locally
+	ID               string //globalOrderID ElevatorID:number
 	Progress         OrderProgress
-	CustomerFloor    int
-	Direction        int //acourding to pressed buttom
-	DestinationFloor int
+	Direction        int       //acourding to pressed buttom
+	DestinationFloor int       //For progress 1-2 it iswhere customer wait, for 6-8 it is where customer whants to go
 	StartingTime     time.Time //time when **buttom** what pressed
 	UpdateTime       time.Time //time of last update
 	Contractor       string    //ID of elevator responsible for this order
