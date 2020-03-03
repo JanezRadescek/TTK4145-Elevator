@@ -4,7 +4,8 @@ import (
 	"../commons"
 )
 
-func startHeadHunter(
+//StartHeadHunter finds contracotr for orders
+func StartHeadHunter(
 	ID string,
 	reciveOrder <-chan commons.OrderStruct,
 	sendOrder chan<- commons.OrderStruct,

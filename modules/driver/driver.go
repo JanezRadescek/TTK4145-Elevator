@@ -10,7 +10,7 @@ import (
 
 const sendUpdateDelay = 1
 
-//StartDriver will periodicly check if orders are being executed as expected
+//StartDriver takes next order we are asigned and opens door, changes floor acordingly
 func StartDriver(
 	ID string,
 	reciveCopy <-chan map[int]commons.OrderStruct,
