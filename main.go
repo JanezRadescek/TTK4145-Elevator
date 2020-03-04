@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 
 	"./modules/commons"
 	"./modules/database"
@@ -18,7 +16,7 @@ func main() {
 	//create graph
 
 	//edges
-	ip := make(chan string)
+	id := make(chan string)
 	network2CSE := make(chan commons.MessageStruct)
 	network2headhunter := make(chan commons.OrderStruct)
 
@@ -35,14 +33,13 @@ func main() {
 
 	//vertices
 	network.StartNetwork(
-		ip,
+		id,
 		watchdogDriver2network,
 		network2CSE,
 		network2headhunter,
 	)
 
-	ID := <-ip
-	ID = ID + ":" + strconv.Itoa(os.Getpid)
+	ID := <-id
 
 	database.StartCSEDB(
 		network2CSE,

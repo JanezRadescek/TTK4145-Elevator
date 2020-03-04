@@ -15,7 +15,7 @@ func StartCSEDB(
 	sendCopy chan<- map[string]commons.ElevatorStruct,
 ) {
 
-	//key elevators ID, value elvator
+	//key elevators ID
 	elevators := make(map[string]commons.ElevatorStruct)
 
 	deleteOfflineElevators := make(chan bool)
@@ -27,10 +27,10 @@ func StartCSEDB(
 	}()
 
 	for {
-		//to prevent race conditions we allways finish case before going into new loop. No go function here.
 		select {
 		case message := <-reciveCSE:
 			{
+				message.Elevator.LastTimeOnline = time.Now()
 				elevators[message.SenderID] = message.Elevator
 			}
 		case <-deleteOfflineElevators:

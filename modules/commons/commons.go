@@ -14,15 +14,9 @@ const (
 	Order
 )
 
-//MessageStruct is used for communication betwen modules and nodes.
-//what is "enum" with possible values being kill, spawn, CSE, order. Text is empty except in case of CSE or order.
-// In case of CSE it is marshalled struct Elevator
-// In case of ordere the following formating applies "d1:d2",
-// where d1  is floor of the pressed button and d2 is disered direction.
+//MessageStruct is used for communication betwen nodes.
 type MessageStruct struct {
-	//we dont relly really on messages arriving in corect order.
-	//time         time.Time //Time when message was created. On forwarding it should not be changed.
-	//id           int //Simpler id
+	//we dont really rely on messages arriving in corect order.
 	SenderID string //IP:PID
 	What     What
 	Local    bool //Its convient to use same "road" as if someone else send us CSE.
@@ -47,9 +41,9 @@ type OrderProgress int
 const (
 	ButtonPressed OrderProgress = 1 + iota
 	Moving2customer
-	OpeningDoor1
+	OpeningDoor1 //Last time to switch elevator. We cant use diferent elevator once doors are closed
 	ClosingDoor1
-	WaitingForDestination
+	WaitingForDestination // After this Destination floor changes
 	Moving2destination
 	OpeningDoor2
 	ClosingDoor2
@@ -57,11 +51,11 @@ const (
 
 //OrderStruct stores all relevant info
 type OrderStruct struct {
-	ID               string //globalOrderID ElevatorID:number
+	ID               string //ElevatorID:number
 	Progress         OrderProgress
 	Direction        int       //acourding to pressed buttom
-	DestinationFloor int       //For progress 1-2 it iswhere customer wait, for 6-8 it is where customer whants to go
+	DestinationFloor int       //For progress 1-5 it is where the customer is waiting, for 6-8 it is where customer whants to go
 	StartingTime     time.Time //time when **buttom** what pressed
-	UpdateTime       time.Time //time of last update
-	Contractor       string    //ID of elevator responsible for this order
+	//UpdateTime       time.Time //time of last update
+	Contractor string //ID of elevator responsible for this order
 }
