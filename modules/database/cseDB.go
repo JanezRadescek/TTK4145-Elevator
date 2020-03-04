@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"time"
 
 	"../commons"
@@ -30,11 +29,9 @@ func StartCSEDB(
 	for {
 		//to prevent race conditions we allways finish case before going into new loop. No go function here.
 		select {
-		case tempM := <-reciveCSE:
+		case message := <-reciveCSE:
 			{
-				tempID := tempM.SenderIP + ":" + tempM.SenderProcessID
-				fmt.Println("Got update from ", tempID)
-				elevators[tempID] = tempM.Elevator
+				elevators[message.SenderID] = message.Elevator
 			}
 		case <-deleteOfflineElevators:
 			{

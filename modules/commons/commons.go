@@ -7,9 +7,9 @@ type What int
 
 //posible values of what
 const (
-	Kill What = 1 + iota
-	Spawn
-	Kick
+	Kill  What = 1 + iota //Not implemented either
+	Spawn                 //Unncesary since we are not using tcp
+	Kick                  //Not implemented
 	CSE
 	Order
 )
@@ -23,12 +23,11 @@ type MessageStruct struct {
 	//we dont relly really on messages arriving in corect order.
 	//time         time.Time //Time when message was created. On forwarding it should not be changed.
 	//id           int //Simpler id
-	SenderIP        string
-	SenderProcessID string
-	What            What
-	Local           bool //Its convient to use same "road" as if someone else send us CSE.
-	Elevator        ElevatorStruct
-	Order           OrderStruct
+	SenderID string //IP:PID
+	What     What
+	Local    bool //Its convient to use same "road" as if someone else send us CSE.
+	Elevator ElevatorStruct
+	Order    OrderStruct
 }
 
 //ElevatorStruct stores all relevant info.

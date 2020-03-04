@@ -1,7 +1,6 @@
 package watchdog
 
 import (
-	"strings"
 	"time"
 
 	"../commons"
@@ -38,25 +37,19 @@ func StartWatchDog(
 				//its pointless to check on ourself if we are performing to spec.
 				if tempT.Before(curentTime) && order.Progress <= 3 {
 
-					tempID := strings.Split(order.Contractor, ":")
-					tempIP := tempID[0]
-					tempProcessID := tempID[1]
-
 					tempM1 := commons.MessageStruct{
-						SenderIP:        tempIP,
-						SenderProcessID: tempProcessID,
-						What:            commons.CSE,
-						Local:           true,
-						Elevator:        commons.ElevatorStruct{Operational: false},
+						SenderID: order.Contractor,
+						What:     commons.CSE,
+						Local:    true,
+						Elevator: commons.ElevatorStruct{Operational: false},
 					}
 					sendMessege <- tempM1
 
 					tempM2 := commons.MessageStruct{
-						SenderIP:        tempIP,
-						SenderProcessID: tempProcessID,
-						What:            commons.Order,
-						Local:           true,
-						Order:           order,
+						SenderID: order.Contractor,
+						What:     commons.Order,
+						Local:    true,
+						Order:    order,
 					}
 					sendMessege <- tempM2
 

@@ -30,16 +30,13 @@ func main() {
 	watchdog2orders := make(chan bool)
 	orders2watchdog := make(chan map[string]commons.OrderStruct)
 
-	watchdog2network := make(chan commons.MessageStruct)
+	watchdogDriver2network := make(chan commons.MessageStruct)
 	watchdog2driver := make(chan map[string]commons.OrderStruct)
-
-	driver2network := make(chan commons.MessageStruct)
 
 	//vertices
 	network.StartNetwork(
 		ip,
-		watchdog2network,
-		driver2network,
+		watchdogDriver2network,
 		network2CSE,
 		network2headhunter,
 	)
@@ -78,7 +75,7 @@ func main() {
 	driver.StartDriver(
 		ID,
 		watchdog2driver,
-		driver2network,
+		watchdogDriver2network,
 	)
 
 	//wait forever

@@ -2,7 +2,6 @@ package driver
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
 	"../commons"
@@ -16,10 +15,6 @@ func StartDriver(
 	reciveCopy <-chan map[int]commons.OrderStruct,
 	sendMessege chan<- commons.MessageStruct,
 ) {
-	tempID := strings.Split(ID, ":")
-	tempIP := tempID[0]
-	tempProcessID := tempID[1]
-
 	myself := commons.ElevatorStruct{}
 	curentOrder := commons.OrderStruct{}
 	orders := make(map[int]commons.OrderStruct)
@@ -71,11 +66,10 @@ func StartDriver(
 				}
 				IDcounter++
 				tempM := commons.MessageStruct{
-					SenderIP:        tempIP,
-					SenderProcessID: tempProcessID,
-					What:            commons.Order,
-					Local:           false,
-					Order:           order,
+					SenderID: ID,
+					What:     commons.Order,
+					Local:    false,
+					Order:    order,
 				}
 				sendMessege <- tempM
 			}
@@ -85,11 +79,10 @@ func StartDriver(
 		case <-timeUp:
 			{
 				tempM := commons.MessageStruct{
-					SenderIP:        tempIP,
-					SenderProcessID: tempProcessID,
-					What:            commons.CSE,
-					Local:           false,
-					Elevator:        myself,
+					SenderID: ID,
+					What:     commons.CSE,
+					Local:    false,
+					Elevator: myself,
 				}
 				sendMessege <- tempM
 			}
