@@ -11,7 +11,7 @@ const elevatorTimeOut int = 10 //10s
 
 //StartCSEDB starts thread save data base for CSE
 func StartCSEDB(
-	cse <-chan commons.MessageStruct,
+	reciveCSE <-chan commons.MessageStruct,
 	requestCopy <-chan bool,
 	sendCopy chan<- map[string]commons.ElevatorStruct,
 ) {
@@ -30,7 +30,7 @@ func StartCSEDB(
 	for {
 		//to prevent race conditions we allways finish case before going into new loop. No go function here.
 		select {
-		case tempM := <-cse:
+		case tempM := <-reciveCSE:
 			{
 				tempID := tempM.SenderIP + ":" + tempM.SenderProcessID
 				fmt.Println("Got update from ", tempID)
