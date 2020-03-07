@@ -7,6 +7,7 @@ import (
 	"./modules/database"
 	"./modules/driver"
 	"./modules/headhunter"
+	"./modules/network"
 	"./modules/watchdog"
 )
 
@@ -65,11 +66,11 @@ func main() {
 		ID,
 		watchdog2orders,
 		orders2watchdog,
-		watchdog2network,
+		watchdogDriver2network,
 		watchdog2driver,
 	)
 
-	driver.StartDriver(
+	driver.StartDriverMaster(
 		ID,
 		watchdog2driver,
 		watchdogDriver2network,

@@ -21,6 +21,7 @@ func StartOrdersDB(
 					if order.Progress == commons.ClosingDoor2 {
 						delete(orders, order.ID)
 					} else {
+						//TODO check if recived order is newer version of order than what we allready have
 						orders[order.ID] = order
 					}
 				} else {

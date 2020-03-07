@@ -36,22 +36,23 @@ func StartNetwork(
 		select {
 		case message := <-reciver:
 			{
-				if message.Local || message.SenderID != ID {
-					switch message.What {
-					case commons.CSE:
-						{
-							sendCSE <- message
-						}
-					case commons.Order:
-						{
-							sendOrder <- message.Order
-						}
-					default:
-						{
-							fmt.Println("Semantic Bug")
-						}
+				//TODO if we get our msg back from UDP broadcast just discard it.
+				switch message.What {
+				case commons.CSE:
+					{
+						sendCSE <- message
 					}
-				} else {
+				case commons.Order:
+					{
+						//TODO check if updated orders id is same as contractor. it would be weird/buggy if someone else was doing work. OR would it?
+						sendOrder <- message.Order
+					}
+				default:
+					{
+						fmt.Println("Semantic Bug")
+					}
+				}
+				if !message.Local {
 					transmiter <- message
 				}
 			}
