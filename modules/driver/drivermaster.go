@@ -9,7 +9,9 @@ import (
 
 const sendUpdateDelay = 500 * time.Millisecond
 
-//StartDriver takes next order we are asigned and opens door, changes floor acordingly
+//TODO properly react to "disruptor" presing buttons at rendom times. (like what happens if somebody somehow pushes button for floor 5 before we even let him in?)
+
+//StartDriverMaster takes next order we are asigned and and give high level instruction on what to do with it.
 func StartDriverMaster(
 	ID string,
 	reciveCopy <-chan map[string]commons.OrderStruct,
@@ -33,15 +35,16 @@ func StartDriverMaster(
 
 	}()
 
-	pickButton := make(chan commons.PickButtonStruct)
+	pickButton := make(chan int)
 	floorButton := make(chan int)
 	floorSensor := make(chan int)
+	DoorSensor := make(chan bool)
 	//stopButton := make(chan bool) //solve this on IO level
 	setMotorDirection := make(chan int)
 	setLamp := make(chan commons.LampStruct)
-	DoorChan := make(chan bool)
+	SetDoor := make(chan bool)
 
-	go StartDriverSlave()
+	go StartDriverSlave(pickButton, floorButton, floorSensor, DoorSensor, setMotorDirection, setLamp, SetDoor)
 
 	for {
 		select {
@@ -49,7 +52,7 @@ func StartDriverMaster(
 			{
 				//find the oldest
 				for _, order := range allOurOrders {
-					if ID == order.Contractor && order.StartingTime.Before(oldestTime) {
+					if order.StartingTime.Before(oldestTime) {
 						oldestTime = order.StartingTime
 						curentOrder = order
 					}
@@ -73,13 +76,13 @@ func StartDriverMaster(
 
 			}
 
-		case button := <-pickButton:
+		case floor := <-pickButton:
 			{
 				order := commons.OrderStruct{
 					ID:               ID + ":" + strconv.Itoa(IDcounter),
 					Progress:         commons.ButtonPressed,
-					Direction:        button.Direction,
-					DestinationFloor: button.Floor,
+					Direction:        1,
+					DestinationFloor: floor,
 					StartingTime:     time.Now(),
 					//UpdateTime:       time.Now(),
 					Contractor: "",
@@ -92,7 +95,7 @@ func StartDriverMaster(
 					Order:    order,
 				}
 				sendMessege <- message
-				setLamp <- commons.LampStruct{button.Floor, true}
+				setLamp <- commons.LampStruct{Floor: floor, ON: true}
 
 			}
 		case floor := <-floorButton:
@@ -121,12 +124,22 @@ func StartDriverMaster(
 					if myself.CurentFloor < floor {
 						tempD = 1
 					}
+
+					//Hole project is design as if we have floorbuttons. We only have buttons down and up.
+					//As such we are hecking here a little bit.
+					//In case that its in different direction, we give it curent time so that older orders can get executed first.(preventing someone hijacking elevator)
+					//If we get new order in the same direction we give it the same time as curent order since it might actually be curent order.
+					tempT := curentOrder.StartingTime
+					if floor != myself.CurentDestination {
+						tempT = time.Now()
+					}
+
 					order := commons.OrderStruct{
 						ID:               ID + ":" + strconv.Itoa(IDcounter),
 						Progress:         commons.Moving2destination,
 						Direction:        tempD,
 						DestinationFloor: floor,
-						StartingTime:     time.Now(),
+						StartingTime:     tempT,
 						//UpdateTime:       time.Now(),
 						Contractor: "",
 					}
@@ -171,10 +184,10 @@ func StartDriverMaster(
 					}
 
 				}
-				DoorChan <- openDoor
+				SetDoor <- openDoor
 			}
 
-		case door := <-DoorChan:
+		case door := <-DoorSensor:
 			{
 				for _, order := range activeOrders {
 					if door {

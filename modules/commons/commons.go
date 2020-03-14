@@ -2,12 +2,18 @@ package commons
 
 import "time"
 
-//What is enum
+//Arbitrary numbers or something that makes sanse to change
+const NumFloors int = 4
+const PollRate time.Duration = 20 * time.Millisecond
+
+var ElevatorPort string = "15657"
+
+//Types and enums introduces for typesafety reasons
+
 type What int
 
-//posible values of what
 const (
-	Kill  What = 1 + iota //Not implemented either
+	Kill  What = 1 + iota //Not implemented
 	Spawn                 //Unncesary since we are not using tcp
 	Kick                  //Not implemented
 	CSE
@@ -16,7 +22,6 @@ const (
 
 //MessageStruct is used for communication betwen nodes.
 type MessageStruct struct {
-	//we dont really rely on messages arriving in corect order.
 	SenderID string //IP:PID
 	What     What
 	Local    bool //Its convient to use same "road" as if someone else send us CSE.
@@ -34,7 +39,6 @@ type ElevatorStruct struct {
 	Idle              bool
 }
 
-//OrderProgress is enum
 type OrderProgress int
 
 //posible values of OrderProgress. Time intervals of orderProgress are open (_,_). behavior on borders is undefined. Undefined bahavior has measure 0 so its OK.
@@ -60,12 +64,23 @@ type OrderStruct struct {
 	Contractor string //ID of elevator responsible for this order
 }
 
-type PickButtonStruct struct {
-	Floor     int
-	Direction int
-}
+// type PickButtonStruct struct {
+// 	Floor     int
+// 	Direction int
+// }
 
 type LampStruct struct {
 	Floor int
 	ON    bool
 }
+
+type State int
+
+const (
+	Idle State = 1 + iota
+	OpeningDoors
+	ClosingDoors
+	MovingUP
+	MovingDown
+	Waiting
+)

@@ -4,3 +4,6 @@
 [submodule "elevator/Simulator-v2"]
 	path = elevator/Simulator-v2
 	url = https://github.com/TTK4145/Simulator-v2
+[submodule "modules/driver/driver-go"]
+	path = modules/driver/driver-go
+	url = https://github.com/TTK4145-students-2020/driver-go
