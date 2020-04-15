@@ -32,12 +32,12 @@ type MessageStruct struct {
 
 //ElevatorStruct stores all relevant info.
 type ElevatorStruct struct {
-	ID                string
-	LastTimeOnline    time.Time
-	Operational       bool
-	CurentFloor       int
-	CurentDestination int
-	Idle              bool
+	ID             string
+	LastTimeOnline time.Time
+	Operational    bool
+	CurentFloor    int
+	//CurentDestination int
+	Idle bool
 }
 
 type OrderProgress int
@@ -58,7 +58,7 @@ const (
 type OrderStruct struct {
 	ID               string //ElevatorID:number
 	Progress         OrderProgress
-	Direction        int       //acourding to pressed buttom, 1 = up, -1 = down, it doesnt make sanse for order to have "stop" direction, thats elevators problem
+	Direction        int       //acourding to pressed buttom, 1 = up, -1 = down. primary use to calculate if we want do this order while some other order is in progress.
 	DestinationFloor int       //For progress 1-5 it is where the customer is waiting, for 6-8 it is where customer whants to go
 	StartingTime     time.Time //time when **buttom** what pressed
 	//UpdateTime       time.Time //time of last update

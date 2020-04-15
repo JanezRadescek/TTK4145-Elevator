@@ -15,6 +15,10 @@ var curentOrder commons.OrderStruct
 var allOurOrders map[string]commons.OrderStruct
 var activeOrders map[string]commons.OrderStruct
 
+var privateSendMessege chan<- commons.MessageStruct
+var privateID string
+var setMotorDirection chan int
+
 //TODO properly react to "disruptor" presing buttons at rendom times. (like what happens if somebody somehow pushes button for floor 5 before we even let him in?)
 
 //StartDriverMaster takes next order we are asigned and and give high level instruction on what to do with it.
@@ -23,6 +27,8 @@ func StartDriverMaster(
 	reciveCopy <-chan map[string]commons.OrderStruct,
 	sendMessege chan<- commons.MessageStruct,
 ) {
+	privateID = ID
+	privateSendMessege = sendMessege
 
 	myself = commons.ElevatorStruct{}
 	curentOrder = commons.OrderStruct{}
@@ -45,11 +51,10 @@ func StartDriverMaster(
 	floorSensor := make(chan int)
 	doorSensor := make(chan bool)
 	//stopButton := make(chan bool) //solve this on IO level
-	setMotorDirection := make(chan int)
-	setLamp := make(chan commons.LampStruct)
-	setDoor := make(chan bool)
+	setMotorDirection = make(chan int)
+	setOpenDoor := make(chan bool)
 
-	go StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setLamp, setDoor)
+	go StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
 
 	for {
 		select {
@@ -93,21 +98,13 @@ func StartDriverMaster(
 							}
 						}
 						if newOrder {
-							tempD := -1
-							if myself.CurentFloor < floor {
-								tempD = 1
-							}
 
-							//Hole project is design as if we have floorbuttons. We only have buttons down and up.
-							//As such we are hecking here a little bit.
-							//In case that its in different direction, we give it curent time so that older orders can get executed first.(preventing someone hijacking elevator)
-							//If we get new order in the same direction we give it the same time as curent order since it might actually be curent order.
 							tempT := time.Now()
 
 							order := commons.OrderStruct{
 								ID:               ID + ":" + strconv.Itoa(IDcounter),
 								Progress:         commons.Moving2destination,
-								Direction:        tempD,
+								Direction:        0, //should only be used for progress button pressed.
 								DestinationFloor: floor,
 								StartingTime:     tempT,
 								//UpdateTime:       time.Now(),
@@ -122,7 +119,7 @@ func StartDriverMaster(
 							}
 							sendMessege <- message
 						}
-						setMotorDirection <- curentOrder.Direction
+						findCurentOrder()
 					}
 				case elevio.BT_HallUp, elevio.BT_HallDown:
 					{
@@ -134,7 +131,7 @@ func StartDriverMaster(
 						order := commons.OrderStruct{
 							ID:               ID + ":" + strconv.Itoa(IDcounter),
 							Progress:         commons.ButtonPressed,
-							Direction:        direction,
+							Direction:        direction, //should only be used in progress button pressed. after this it should be calculated as it is relative to elevator position.
 							DestinationFloor: floor,
 							StartingTime:     time.Now(),
 							//UpdateTime:       time.Now(),
@@ -148,7 +145,6 @@ func StartDriverMaster(
 							Order:    order,
 						}
 						sendMessege <- message
-						setLamp <- commons.LampStruct{Floor: floor, ON: true}
 					}
 				}
 
@@ -184,7 +180,7 @@ func StartDriverMaster(
 					}
 
 				}
-				setDoor <- openDoor
+				setOpenDoor <- openDoor
 			}
 
 		case door := <-doorSensor:
@@ -216,7 +212,9 @@ func StartDriverMaster(
 							Order:    order,
 						}
 						sendMessege <- message
-						//after closing door find curent order
+
+						//before door closed the destination might allready be pressed.
+						findCurentOrder()
 					}
 				}
 			}
@@ -239,7 +237,8 @@ func StartDriverMaster(
 
 func findCurentOrder() {
 	if myself.Operational {
-		myself.CurentDestination = curentOrder.DestinationFloor
+		//find closest order in the same direction as the "curent" order
+		//myself.CurentDestination = curentOrder.DestinationFloor
 		vector := curentOrder.DestinationFloor - myself.CurentFloor
 		for key, order := range allOurOrders {
 			tempV1 := order.DestinationFloor - myself.CurentFloor
@@ -254,21 +253,29 @@ func findCurentOrder() {
 		}
 		//start doing curent order
 		switch curentOrder.Progress {
-		case commons.ButtonPressed, commons.Moving2customer:
+		case commons.ButtonPressed, commons.Moving2customer, commons.Moving2destination:
 			{
 				//TODO
+				direction := -1
+				if myself.CurentFloor < curentOrder.DestinationFloor {
+					direction = 1
+				}
+				setMotorDirection <- direction
+				if curentOrder.Progress == commons.ButtonPressed {
+					curentOrder.Progress = commons.Moving2customer
+				}
+
+				message := commons.MessageStruct{
+					SenderID: privateID,
+					What:     commons.Order,
+					Local:    false,
+					Order:    curentOrder,
+				}
+				privateSendMessege <- message
 			}
-		case commons.OpeningDoor1, commons.ClosingDoor1, commons.WaitingForDestination:
+		case commons.OpeningDoor1, commons.ClosingDoor1, commons.WaitingForDestination, commons.OpeningDoor2, commons.ClosingDoor2:
 			{
-				//DO  nothing. slaver will close door let us now about closing, and then we still cant continue because we need destination.
-			}
-		case commons.Moving2destination:
-			{
-				//TODO
-			}
-		case commons.OpeningDoor2, commons.ClosingDoor2:
-			{
-				//DO  nothing again. let slave do his work.
+				//DO  nothing. slave will close door let us now about closing, and then we still cant continue because we need destination.
 			}
 
 		}

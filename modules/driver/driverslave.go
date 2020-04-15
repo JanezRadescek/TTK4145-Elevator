@@ -13,8 +13,7 @@ func StartDriverSlave(
 	floorSensor chan<- int,
 	doorSensor chan<- bool, //true if open
 	setMotorDirection <-chan int,
-	setLamp <-chan commons.LampStruct,
-	setDoor <-chan bool,
+	setOpenDoor <-chan bool,
 ) {
 	elevatorPort := commons.ElevatorPort
 	numFloors := commons.NumFloors
@@ -40,25 +39,58 @@ func StartDriverSlave(
 		case b := <-drv_buttons:
 			{
 				newButton <- b
+				go elevio.SetButtonLamp(b.Button, b.Floor, true)
 			}
 		case f := <-drv_floors:
 			{
 				floorSensor <- f
+				curentFloor = f
 			}
-		case door := <-setDoor:
+		case o := <-drv_obstr:
 			{
-				elevio.SetMotorDirection(elevio.MD_Stop)
-				motorDirection = elevio.MD_Stop
-
-				//Is this how you open doors for customers to get in/out ??
-				elevio.SetDoorOpenLamp(true)
-
-				doorSensor <- true
-				time.Sleep(commons.DoorOpenDuratation)
-
-				elevio.SetDoorOpenLamp(false)
-				doorSensor <- false
+				if o {
+					go elevio.SetMotorDirection(elevio.MD_Stop)
+				} else {
+					go elevio.SetMotorDirection(motorDirection)
+				}
 			}
+		case s := <-drv_stop:
+			{
+				if s {
+					go elevio.SetMotorDirection(elevio.MD_Stop)
+				} else {
+					go elevio.SetMotorDirection(motorDirection)
+				}
+			}
+		case <-setOpenDoor:
+			{
+				if !doorOpen {
+					go func() {
+						doorOpen = true
+						elevio.SetMotorDirection(elevio.MD_Stop)
+
+						//Is this how you open doors for customers to get in/out ??
+						elevio.SetDoorOpenLamp(true)
+
+						elevio.SetButtonLamp(elevio.BT_HallUp, curentFloor, false)
+						elevio.SetButtonLamp(elevio.BT_HallDown, curentFloor, false)
+						elevio.SetButtonLamp(elevio.BT_Cab, curentFloor, false)
+
+						doorSensor <- true
+						time.Sleep(commons.DoorOpenDuratation)
+
+						//Is this how you open doors for customers to get in/out ??
+						elevio.SetDoorOpenLamp(false)
+						doorSensor <- false
+						doorOpen = false
+					}()
+				}
+			}
+		case d := <-setMotorDirection:
+			{
+				//TODO
+			}
+
 		}
 	}
 }
