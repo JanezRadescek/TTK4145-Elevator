@@ -1,26 +1,28 @@
 package driver
 
 import (
+	"time"
+
 	"../commons"
 	"./driver-go/elevio"
 )
 
 //StartDriverSlave operates elevator acording to the high level orders and report back sensor readings
 func StartDriverSlave(
-	pickButton chan<- int,
-	floorButton chan<- int,
+	newButton chan<- elevio.ButtonEvent,
 	floorSensor chan<- int,
-	DoorSensor chan<- bool,
+	doorSensor chan<- bool, //true if open
 	setMotorDirection <-chan int,
 	setLamp <-chan commons.LampStruct,
-	SetDoor <-chan bool,
+	setDoor <-chan bool,
 ) {
 	elevatorPort := commons.ElevatorPort
 	numFloors := commons.NumFloors
 
 	elevio.Init("localhost:"+elevatorPort, numFloors)
 
-	var d elevio.MotorDirection = elevio.MD_Stop
+	var motorDirection elevio.MotorDirection = elevio.MD_Stop
+	var doorOpen bool = false
 	curentFloor := 0
 
 	drv_buttons := make(chan elevio.ButtonEvent)
@@ -37,24 +39,25 @@ func StartDriverSlave(
 		select {
 		case b := <-drv_buttons:
 			{
-				switch b.Button {
-				case elevio.BT_Cab:
-					{
-						pickButton <- b.Floor
-					}
-				case elevio.BT_HallUp:
-					{
-						floorButton <- (curentFloor + 1)
-					}
-				case elevio.BT_HallDown:
-					{
-						floorButton <- (curentFloor - 1)
-					}
-				}
+				newButton <- b
 			}
 		case f := <-drv_floors:
 			{
 				floorSensor <- f
+			}
+		case door := <-setDoor:
+			{
+				elevio.SetMotorDirection(elevio.MD_Stop)
+				motorDirection = elevio.MD_Stop
+
+				//Is this how you open doors for customers to get in/out ??
+				elevio.SetDoorOpenLamp(true)
+
+				doorSensor <- true
+				time.Sleep(commons.DoorOpenDuratation)
+
+				elevio.SetDoorOpenLamp(false)
+				doorSensor <- false
 			}
 		}
 	}

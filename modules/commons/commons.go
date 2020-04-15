@@ -5,6 +5,7 @@ import "time"
 //Arbitrary numbers or something that makes sanse to change
 const NumFloors int = 4
 const PollRate time.Duration = 20 * time.Millisecond
+const DoorOpenDuratation = 5 * time.Second
 
 var ElevatorPort string = "15657"
 
