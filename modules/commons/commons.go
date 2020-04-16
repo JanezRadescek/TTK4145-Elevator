@@ -6,7 +6,9 @@ import "time"
 const NumFloors int = 4
 const PollRate time.Duration = 20 * time.Millisecond
 const DoorOpenDuratation = 5 * time.Second
-const CheckDoorOpen = 100 * time.Millisecond //used to check if doors are closed so we can move elevator.
+const CheckDoorOpen = 100 * time.Millisecond     //used to check if doors are closed so we can move elevator.
+const WatchDogFrequency = 500 * time.Millisecond //After how much time we check if orders are being executed.
+const MaxOrderTime = 30 * time.Second            //How much time does the elevator has before we try to find another elevator to do it.
 
 var ElevatorPort string = "15657"
 
@@ -62,8 +64,8 @@ type OrderStruct struct {
 	Direction        int       //acourding to pressed buttom, 1 = up, -1 = down. primary use to calculate if we want do this order while some other order is in progress.
 	DestinationFloor int       //For progress 1-5 it is where the customer is waiting, for 6-8 it is where customer whants to go
 	StartingTime     time.Time //time when **buttom** what pressed
-	//UpdateTime       time.Time //time of last update
-	Contractor string //ID of elevator responsible for this order
+	MovingTime       time.Time //time when an elevator started doing this Order. Sometimes order can take long time simply because of high amount of trafic and not because something is wrong
+	Contractor       string    //ID of elevator responsible for this order
 }
 
 // type PickButtonStruct struct {

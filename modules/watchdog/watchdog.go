@@ -6,9 +6,6 @@ import (
 	"../commons"
 )
 
-const delay = 500 * time.Millisecond //2Hz //
-const maxTime int = 30               //30s
-
 //StartWatchDog will periodicly check if orders are being executed as expected
 func StartWatchDog(
 	ID string,
@@ -19,7 +16,7 @@ func StartWatchDog(
 ) {
 	go func() {
 		for {
-			time.Sleep(delay)
+			time.Sleep(commons.WatchDogFrequency)
 			requestCopy <- true
 		}
 	}()
@@ -31,16 +28,16 @@ func StartWatchDog(
 		curentTime := time.Now()
 
 		for _, order := range tempOrders {
-			tempT := order.StartingTime.Add(time.Duration(maxTime) * time.Second)
+			tempT := order.StartingTime.Add(commons.MaxOrderTime)
 
 			//its pointless to check on ourself if we are performing to spec.
 			if order.Contractor == ID {
 				ourOrders[order.ID] = order
 			} else {
 				if tempT.Before(curentTime) && order.Progress <= 3 {
-					//Once the progress is 4 or more we cant switch elevator. In case of Failure customer must unfortunatly die:)
+					//Once the progress is 4 or more we cant switch elevator. In case of Failure at this stage unfortunatly  customer must die:)
 					sendMessege <- commons.MessageStruct{
-						SenderID: order.Contractor,
+						SenderID: order.Contractor, //we seend messege in the name of contractor.
 						What:     commons.CSE,
 						Local:    true,
 						Elevator: commons.ElevatorStruct{Operational: false},
