@@ -33,7 +33,7 @@ func main() {
 	watchdog2driver := make(chan map[string]commons.OrderStruct)
 
 	//vertices
-	network.StartNetwork(
+	go network.StartNetwork(
 		id,
 		watchdogDriver2network,
 		network2CSE,
@@ -42,19 +42,19 @@ func main() {
 
 	ID := <-id
 
-	database.StartCSEDB(
+	go database.StartCSEDB(
 		network2CSE,
 		headhunter2CSE,
 		CSE2headhunter,
 	)
 
-	database.StartOrdersDB(
+	go database.StartOrdersDB(
 		headhunter2orders,
 		watchdog2orders,
 		orders2watchdog,
 	)
 
-	headhunter.StartHeadHunter(
+	go headhunter.StartHeadHunter(
 		ID,
 		network2headhunter,
 		headhunter2orders,
@@ -62,7 +62,7 @@ func main() {
 		CSE2headhunter,
 	)
 
-	watchdog.StartWatchDog(
+	go watchdog.StartWatchDog(
 		ID,
 		watchdog2orders,
 		orders2watchdog,
@@ -70,12 +70,13 @@ func main() {
 		watchdog2driver,
 	)
 
-	driver.StartDriverMaster(
+	go driver.StartDriverMaster(
 		ID,
 		watchdog2driver,
 		watchdogDriver2network,
 	)
 
 	//wait forever
+	fmt.Println("waiting for CTRL + C")
 	select {}
 }
