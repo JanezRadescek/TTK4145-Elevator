@@ -55,6 +55,7 @@ func StartDriverMaster(
 	setOpenDoor := make(chan bool)
 
 	go StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
+	myself.LastTimeChecked = time.Now()
 
 	for {
 		select {
@@ -236,48 +237,47 @@ func StartDriverMaster(
 }
 
 func findCurentOrder() {
-	if myself.Operational {
-		//find closest order in the same direction as the "curent" order
-		//myself.CurentDestination = curentOrder.DestinationFloor
-		vector := curentOrder.DestinationFloor - myself.CurentFloor
-		for key, order := range allOurOrders {
-			tempV1 := order.DestinationFloor - myself.CurentFloor
-			tempV2 := order.Direction
-			if (tempV1*vector > 0) && (tempV2*vector > 0) {
-				activeOrders[key] = order
-				if tempV1*tempV1 < vector*vector {
-					curentOrder = order
-				}
-
-			}
-		}
-		//start doing curent order
-		switch curentOrder.Progress {
-		case commons.ButtonPressed, commons.Moving2customer, commons.Moving2destination:
-			{
-				//TODO
-				direction := -1
-				if myself.CurentFloor < curentOrder.DestinationFloor {
-					direction = 1
-				}
-				setMotorDirection <- direction
-				if curentOrder.Progress == commons.ButtonPressed {
-					curentOrder.Progress = commons.Moving2customer
-				}
-
-				message := commons.MessageStruct{
-					SenderID: privateID,
-					What:     commons.Order,
-					Local:    false,
-					Order:    curentOrder,
-				}
-				privateSendMessege <- message
-			}
-		case commons.OpeningDoor1, commons.ClosingDoor1, commons.WaitingForDestination, commons.OpeningDoor2, commons.ClosingDoor2:
-			{
-				//DO  nothing. slave will close door let us now about closing, and then we still cant continue because we need destination.
+	//find closest order in the same direction as the "curent" order
+	//myself.CurentDestination = curentOrder.DestinationFloor
+	vector := curentOrder.DestinationFloor - myself.CurentFloor
+	for key, order := range allOurOrders {
+		tempV1 := order.DestinationFloor - myself.CurentFloor
+		tempV2 := order.Direction
+		if (tempV1*vector > 0) && (tempV2*vector > 0) {
+			activeOrders[key] = order
+			if tempV1*tempV1 < vector*vector {
+				curentOrder = order
 			}
 
 		}
 	}
+	//start doing curent order
+	switch curentOrder.Progress {
+	case commons.ButtonPressed, commons.Moving2customer, commons.Moving2destination:
+		{
+			//TODO
+			direction := -1
+			if myself.CurentFloor < curentOrder.DestinationFloor {
+				direction = 1
+			}
+			setMotorDirection <- direction
+			if curentOrder.Progress == commons.ButtonPressed {
+				curentOrder.Progress = commons.Moving2customer
+			}
+
+			message := commons.MessageStruct{
+				SenderID: privateID,
+				What:     commons.Order,
+				Local:    false,
+				Order:    curentOrder,
+			}
+			privateSendMessege <- message
+		}
+	case commons.OpeningDoor1, commons.ClosingDoor1, commons.WaitingForDestination, commons.OpeningDoor2, commons.ClosingDoor2:
+		{
+			//DO  nothing. slave will close door let us now about closing, and then we still cant continue because we need destination.
+		}
+
+	}
+
 }

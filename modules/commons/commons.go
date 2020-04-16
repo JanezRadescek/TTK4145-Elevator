@@ -22,6 +22,7 @@ const (
 	Kick                  //Not implemented
 	CSE
 	Order
+	Malfunction //when we need to tell cseDB that elevator is not doing his job
 )
 
 //MessageStruct is used for communication betwen nodes.
@@ -35,10 +36,10 @@ type MessageStruct struct {
 
 //ElevatorStruct stores all relevant info.
 type ElevatorStruct struct {
-	ID             string
-	LastTimeOnline time.Time
-	Operational    bool
-	CurentFloor    int
+	ID              string
+	LastTimeOnline  time.Time
+	LastTimeChecked time.Time //Time when we find out it does not work as it should. As such we assume it cant perform any order that are older than this time stamp. We do assume it go instantly fixed and as such it can start doing new orders
+	CurentFloor     int
 	//CurentDestination int
 	Idle bool
 }

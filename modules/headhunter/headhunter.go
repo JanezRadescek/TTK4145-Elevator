@@ -14,7 +14,7 @@ func StartHeadHunter(
 ) {
 	for {
 		order := <-reciveOrder
-		if order.Progress <= 3 {
+		if order.Progress <= commons.OpeningDoor1 {
 			requestCopy <- true
 			elevators := <-reciveCopy
 			contractor := ID
@@ -28,6 +28,8 @@ func StartHeadHunter(
 				}
 			}
 			order.Contractor = contractor
+		} else {
+			//There is nothing we can do past PRogress commons.OpeningDoor1
 		}
 		sendOrder <- order
 	}

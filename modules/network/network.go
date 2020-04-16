@@ -38,7 +38,7 @@ func StartNetwork(
 			{
 				//TODO if we get our msg back from UDP broadcast just discard it.
 				switch message.What {
-				case commons.CSE:
+				case commons.CSE, commons.Malfunction:
 					{
 						sendCSE <- message
 					}

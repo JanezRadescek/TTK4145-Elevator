@@ -31,7 +31,22 @@ func StartCSEDB(
 		case message := <-reciveCSE:
 			{
 				message.Elevator.LastTimeOnline = time.Now()
-				elevators[message.SenderID] = message.Elevator
+				switch message.What {
+				case commons.CSE:
+					{
+						elevators[message.SenderID] = message.Elevator
+					}
+				case commons.Malfunction:
+					{
+						if elevator, ok := elevators[message.SenderID]; ok {
+							elevator.LastTimeChecked = message.Elevator.LastTimeChecked
+							elevators[message.SenderID] = elevator
+						} else {
+							//something is wrong with code if we get here
+						}
+					}
+				}
+
 			}
 		case <-deleteOfflineElevators:
 			{

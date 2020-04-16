@@ -38,9 +38,9 @@ func StartWatchDog(
 					//Once the progress is 4 or more we cant switch elevator. In case of Failure at this stage unfortunatly  customer must die:)
 					sendMessege <- commons.MessageStruct{
 						SenderID: order.Contractor, //we seend messege in the name of contractor.
-						What:     commons.CSE,
+						What:     commons.Malfunction,
 						Local:    true,
-						Elevator: commons.ElevatorStruct{Operational: false},
+						Elevator: commons.ElevatorStruct{LastTimeChecked: time.Now()},
 					}
 
 					sendMessege <- commons.MessageStruct{
