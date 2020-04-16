@@ -14,7 +14,7 @@ const port int = 16569
 //StartNetwork is responsible to make sure "im alive" is being send all the time
 func StartNetwork(
 	id chan<- string,
-	reciver <-chan commons.MessageStruct,
+	reciver chan commons.MessageStruct,
 	sendCSE chan<- commons.MessageStruct,
 	sendOrder chan<- commons.OrderStruct,
 ) {
