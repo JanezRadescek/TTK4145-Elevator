@@ -6,6 +6,7 @@ import "time"
 const NumFloors int = 4
 const PollRate time.Duration = 20 * time.Millisecond
 const DoorOpenDuratation = 5 * time.Second
+const CheckDoorOpen = 100 * time.Millisecond //used to check if doors are closed so we can move elevator.
 
 var ElevatorPort string = "15657"
 

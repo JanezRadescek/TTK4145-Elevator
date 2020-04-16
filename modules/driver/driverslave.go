@@ -88,7 +88,31 @@ func StartDriverSlave(
 			}
 		case d := <-setMotorDirection:
 			{
-				//TODO
+				switch d {
+				case 1:
+					{
+						motorDirection = elevio.MD_Up
+					}
+				case -1:
+					{
+						motorDirection = elevio.MD_Down
+					}
+				case 0:
+					{
+						motorDirection = elevio.MD_Stop
+					}
+				}
+
+				go func() {
+					for {
+						if doorOpen {
+							time.Sleep(commons.CheckDoorOpen)
+						} else {
+							elevio.SetMotorDirection(motorDirection)
+							break
+						}
+					}
+				}()
 			}
 
 		}
