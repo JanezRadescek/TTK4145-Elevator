@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -61,6 +62,7 @@ func StartDriverMaster(
 		select {
 		case allOurOrders = <-reciveCopy:
 			{
+				fmt.Println("drivermaster recived copy", allOurOrders)
 				//find the oldest
 				for _, order := range allOurOrders {
 					if order.StartingTime.Before(oldestTime) {
@@ -78,7 +80,9 @@ func StartDriverMaster(
 				switch button.Button {
 				case elevio.BT_Cab:
 					{
+
 						floor := button.Floor
+						fmt.Println("drivermaster recived cab to floor ", floor)
 						newOrder := true //two customers might wanna go to 2 diferent floor
 						for _, order := range activeOrders {
 							if order.DestinationFloor == floor {
@@ -125,6 +129,7 @@ func StartDriverMaster(
 				case elevio.BT_HallUp, elevio.BT_HallDown:
 					{
 						floor := button.Floor
+						fmt.Println("drivermaster recived order from floor ", floor)
 						direction := 1 //up
 						if button.Button == elevio.BT_HallDown {
 							direction = -1
@@ -153,6 +158,7 @@ func StartDriverMaster(
 
 		case floor := <-floorSensor:
 			{
+				fmt.Println("drivermaster recived floor ", floor)
 				myself.CurentFloor = floor
 				openDoor := false
 				for _, order := range activeOrders {
@@ -186,6 +192,7 @@ func StartDriverMaster(
 
 		case door := <-doorSensor:
 			{
+				fmt.Println("drivermaster doorsensor ", door)
 				for _, order := range activeOrders {
 					if door {
 						if order.Progress < commons.OpeningDoor1 {
@@ -222,6 +229,7 @@ func StartDriverMaster(
 
 		case <-time4Update:
 			{
+				fmt.Println("drivermaster time for update ")
 				tempM := commons.MessageStruct{
 					SenderID: ID,
 					What:     commons.CSE,

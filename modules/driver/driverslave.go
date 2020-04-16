@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"fmt"
 	"time"
 
 	"../commons"
@@ -38,16 +39,19 @@ func StartDriverSlave(
 		select {
 		case b := <-drv_buttons:
 			{
+				fmt.Println("driverslave button ", b)
 				newButton <- b
 				go elevio.SetButtonLamp(b.Button, b.Floor, true)
 			}
 		case f := <-drv_floors:
 			{
+				fmt.Println("driverslave floor ", f)
 				floorSensor <- f
 				curentFloor = f
 			}
 		case o := <-drv_obstr:
 			{
+				fmt.Println("driverslave obstacle", o)
 				if o {
 					go elevio.SetMotorDirection(elevio.MD_Stop)
 				} else {
@@ -56,6 +60,7 @@ func StartDriverSlave(
 			}
 		case s := <-drv_stop:
 			{
+				fmt.Println("driverslave stop ", s)
 				if s {
 					go elevio.SetMotorDirection(elevio.MD_Stop)
 				} else {
@@ -64,6 +69,7 @@ func StartDriverSlave(
 			}
 		case <-setOpenDoor:
 			{
+				fmt.Println("driverslave setopendoor ", true)
 				if !doorOpen {
 					go func() {
 						doorOpen = true
@@ -88,6 +94,7 @@ func StartDriverSlave(
 			}
 		case d := <-setMotorDirection:
 			{
+				fmt.Println("driverslave set motor direction ", d)
 				switch d {
 				case 1:
 					{
