@@ -38,7 +38,7 @@ func StartWatchDog(
 			if order.Contractor == ID {
 				ourOrders[order.ID] = order
 			} else {
-				if tempT.Before(curentTime) && order.Progress <= 3 {
+				if tempT.Before(curentTime) && order.Progress <= commons.OpeningDoor1 {
 					//Once the progress is 4 or more we cant switch elevator. In case of Failure at this stage unfortunatly  customer must die:)
 					sendMessege <- commons.MessageStruct{
 						SenderID: order.Contractor, //we seend messege in the name of contractor.
@@ -51,6 +51,17 @@ func StartWatchDog(
 						SenderID: order.Contractor,
 						What:     commons.Order,
 						Local:    true,
+						Order:    order,
+					}
+				}
+				tempT = order.LastUpdate.Add(commons.MaxUserTime)
+				if tempT.Before(curentTime) && order.Progress == commons.WaitingForDestination {
+					//It looks like someone called cab but no one entered. Elevator is waiting for destination button which will not be pressed. so delete order.
+					order.Progress = commons.ClosingDoor2
+					sendMessege <- commons.MessageStruct{
+						SenderID: order.Contractor,
+						What:     commons.Order,
+						Local:    false,
 						Order:    order,
 					}
 				}

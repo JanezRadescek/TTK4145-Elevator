@@ -9,6 +9,7 @@ const DoorOpenDuratation = 5 * time.Second
 const CheckDoorOpen = 100 * time.Millisecond     //used to check if doors are closed so we can move elevator.
 const WatchDogFrequency = 500 * time.Millisecond //After how much time we check if orders are being executed.
 const MaxOrderTime = 30 * time.Second            //How much time does the elevator has before we try to find another elevator to do it.
+const MaxUserTime = 30 * time.Second             //time we wait for user to press button, before we delete order.
 const MaxElevatorTime = -10 * time.Second        //If we dont get CSE for $s time we assume elevator is gone
 
 var ElevatorPort string = "15657"
@@ -67,6 +68,7 @@ type OrderStruct struct {
 	DestinationFloor int       //For progress 1-5 it is where the customer is waiting, for 6-8 it is where customer whants to go
 	StartingTime     time.Time //time when **buttom** what pressed
 	MovingTime       time.Time //time when an elevator started doing this Order. Sometimes order can take long time simply because of high amount of trafic and not because something is wrong
+	LastUpdate       time.Time //when we wait for user to press button we need to know when did we close the door.
 	Contractor       string    //ID of elevator responsible for this order
 }
 

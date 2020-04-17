@@ -121,11 +121,11 @@ func StartDriverMaster(
 							order := commons.OrderStruct{
 								ID:               ID + ":" + strconv.Itoa(IDcounter),
 								Progress:         commons.Moving2destination,
-								Direction:        0, //should only be used for progress button pressed.
+								Direction:        0, //should only be used for progress == commons.buttonpressed.
 								DestinationFloor: floor,
 								StartingTime:     tempT,
-								//UpdateTime:       time.Now(),
-								Contractor: "",
+								LastUpdate:       time.Now(),
+								Contractor:       "",
 							}
 							IDcounter++
 							message := commons.MessageStruct{
@@ -152,8 +152,8 @@ func StartDriverMaster(
 							Direction:        direction, //should only be used in progress button pressed. after this it should be calculated as it is relative to elevator position.
 							DestinationFloor: floor,
 							StartingTime:     time.Now(),
-							//UpdateTime:       time.Now(),
-							Contractor: "",
+							LastUpdate:       time.Now(),
+							Contractor:       "",
 						}
 						IDcounter++
 						message := commons.MessageStruct{
@@ -179,6 +179,7 @@ func StartDriverMaster(
 					case commons.ButtonPressed:
 						{
 							order.Progress = commons.Moving2customer
+							order.LastUpdate = time.Now()
 							tempM := commons.MessageStruct{
 								SenderID: ID,
 								What:     commons.Order,
@@ -215,27 +216,22 @@ func StartDriverMaster(
 						} else if order.Progress == commons.Moving2destination {
 							order.Progress = commons.OpeningDoor2
 						}
-						message := commons.MessageStruct{
-							SenderID: ID,
-							What:     commons.Order,
-							Local:    false,
-							Order:    order,
-						}
-						sendMessege <- message
 					} else {
 						if order.Progress == commons.OpeningDoor1 {
 							order.Progress = commons.ClosingDoor1
 						} else if order.Progress == commons.OpeningDoor2 {
 							order.Progress = commons.ClosingDoor2
 						}
-						message := commons.MessageStruct{
-							SenderID: ID,
-							What:     commons.Order,
-							Local:    false,
-							Order:    order,
-						}
-						sendMessege <- message
-
+					}
+					order.LastUpdate = time.Now()
+					message := commons.MessageStruct{
+						SenderID: ID,
+						What:     commons.Order,
+						Local:    false,
+						Order:    order,
+					}
+					sendMessege <- message
+					if !door {
 						//before door closed the destination might allready be pressed.
 						findCurentOrder()
 					}
@@ -301,6 +297,11 @@ func findCurentOrder() {
 	case commons.OpeningDoor1, commons.ClosingDoor1, commons.WaitingForDestination, commons.OpeningDoor2, commons.ClosingDoor2:
 		{
 			//DO  nothing. slave will close door let us now about closing, and then we still cant continue because we need destination.
+		}
+	default:
+		{
+			//no curent order
+			setMotorDirection <- 0
 		}
 
 	}

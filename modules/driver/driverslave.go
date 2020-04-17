@@ -21,7 +21,10 @@ func StartDriverSlave(
 
 	elevio.Init("localhost:"+elevatorPort, numFloors)
 
-	var motorDirection elevio.MotorDirection = elevio.MD_Stop
+	//move down so if we are inbetwen floors we can get floor sensor reading and get to know where we are
+	var motorDirection elevio.MotorDirection = elevio.MD_Down
+	elevio.SetMotorDirection(motorDirection)
+
 	var doorOpen bool = false
 	curentFloor := 0
 
@@ -51,7 +54,7 @@ func StartDriverSlave(
 			}
 		case o := <-drv_obstr:
 			{
-				fmt.Println("driverslave obstacle", o)
+				fmt.Println("driverslave obstacle ", o)
 				if o {
 					go elevio.SetMotorDirection(elevio.MD_Stop)
 				} else {
