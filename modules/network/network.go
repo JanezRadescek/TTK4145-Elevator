@@ -36,6 +36,7 @@ func StartNetwork(
 		select {
 		case message := <-reciver:
 			{
+				fmt.Println("Network recived message ", message)
 				//TODO if we get our msg back from UDP broadcast just discard it.
 				switch message.What {
 				case commons.CSE, commons.Malfunction:
