@@ -25,6 +25,7 @@ func StartWatchDog(
 	for {
 		tempOrders := <-reciveCopy
 		fmt.Println("watchdog recived copy of orders", tempOrders)
+		//key is ID
 		ourOrders := make(map[string]commons.OrderStruct)
 
 		curentTime := time.Now()
@@ -56,8 +57,8 @@ func StartWatchDog(
 			}
 
 		}
-		if len(ourOrders) != 0 {
-			sendOurOrders <- ourOrders
-		}
+
+		sendOurOrders <- ourOrders
+
 	}
 }

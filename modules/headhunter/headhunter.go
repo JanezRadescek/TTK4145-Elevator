@@ -25,7 +25,7 @@ func StartHeadHunter(
 
 			for _, tempE := range elevators {
 				tempV := tempE.CurentFloor - order.DestinationFloor
-				if (tempV*tempV < vector*vector) && tempE.Idle {
+				if (tempV*tempV < vector*vector) && tempE.Idle && order.StartingTime.After(tempE.LastTimeChecked) {
 					vector = tempV
 					contractor = tempE.ID
 				}

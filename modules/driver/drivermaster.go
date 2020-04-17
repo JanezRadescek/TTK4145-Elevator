@@ -32,11 +32,12 @@ func StartDriverMaster(
 	privateSendMessege = sendMessege
 
 	myself = commons.ElevatorStruct{}
-	curentOrder = commons.OrderStruct{}
-	//key is?
+	myself.LastTimeChecked = time.Now()
+	myself.Idle = true
+
+	//key is ID
 	allOurOrders = make(map[string]commons.OrderStruct)
-	activeOrders = make(map[string]commons.OrderStruct)
-	oldestTime := time.Now()
+
 	IDcounter := 1
 
 	time4Update := make(chan bool)
@@ -56,22 +57,33 @@ func StartDriverMaster(
 	setOpenDoor := make(chan bool)
 
 	go StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
-	myself.LastTimeChecked = time.Now()
 
 	for {
 		select {
 		case allOurOrders = <-reciveCopy:
 			{
 				fmt.Println("drivermaster recived copy", allOurOrders)
-				//find the oldest
-				for _, order := range allOurOrders {
-					if order.StartingTime.Before(oldestTime) {
+
+				//find the oldest. or if it doesnt exist enjoy
+				if len(allOurOrders) != 0 {
+					oldestTime := time.Now()
+					for _, order := range allOurOrders {
 						oldestTime = order.StartingTime
 						curentOrder = order
+						myself.Idle = false
+						break
 					}
+					for _, order := range allOurOrders {
+						if order.StartingTime.Before(oldestTime) {
+							oldestTime = order.StartingTime
+							curentOrder = order
+						}
+					}
+					//find other order we may do on the way to the oldest first and start doing it.
+					findCurentOrder()
+				} else {
+					myself.Idle = true
 				}
-				//find other order we may do on the way to the oldest first and start doing it.
-				findCurentOrder()
 
 			}
 
@@ -250,7 +262,8 @@ func StartDriverMaster(
 
 func findCurentOrder() {
 	//find closest order in the same direction as the "curent" order
-	//myself.CurentDestination = curentOrder.DestinationFloor
+	activeOrders = make(map[string]commons.OrderStruct)
+	////myself.CurentDestination = curentOrder.DestinationFloor
 	vector := curentOrder.DestinationFloor - myself.CurentFloor
 	for key, order := range allOurOrders {
 		tempV1 := order.DestinationFloor - myself.CurentFloor
