@@ -187,7 +187,10 @@ func StartDriverMaster(
 					}
 
 				}
-				setOpenDoor <- openDoor
+				if openDoor {
+					setOpenDoor <- true
+				}
+
 			}
 
 		case door := <-doorSensor:

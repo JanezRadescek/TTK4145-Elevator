@@ -1,6 +1,7 @@
 package watchdog
 
 import (
+	"fmt"
 	"time"
 
 	"../commons"
@@ -23,11 +24,13 @@ func StartWatchDog(
 
 	for {
 		tempOrders := <-reciveCopy
+		fmt.Println("watchdog recived copy of orders", tempOrders)
 		ourOrders := make(map[string]commons.OrderStruct)
 
 		curentTime := time.Now()
 
 		for _, order := range tempOrders {
+
 			tempT := order.StartingTime.Add(commons.MaxOrderTime)
 
 			//its pointless to check on ourself if we are performing to spec.

@@ -1,6 +1,8 @@
 package headhunter
 
 import (
+	"fmt"
+
 	"../commons"
 )
 
@@ -14,6 +16,7 @@ func StartHeadHunter(
 ) {
 	for {
 		order := <-reciveOrder
+		fmt.Println("headhunter recived order", order)
 		if order.Progress <= commons.OpeningDoor1 {
 			requestCopy <- true
 			elevators := <-reciveCopy

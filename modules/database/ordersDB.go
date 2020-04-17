@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+
 	"../commons"
 )
 
@@ -16,6 +18,7 @@ func StartOrdersDB(
 		select {
 		case order := <-reciveOrder:
 			{
+				fmt.Println("ordersDB recived order", order)
 				if _, ok := orders[order.ID]; ok {
 					//order is finished when Progress is Closing Door 2. if customer doesnt press button in ~10s driver should skip to Closing2
 					if order.Progress == commons.ClosingDoor2 {
@@ -25,15 +28,17 @@ func StartOrdersDB(
 						orders[order.ID] = order
 					}
 				} else {
-
+					//to prevent a mess if multiple users want to go with same elevator to the same destination
 					unique := true
 					for _, tempO := range orders {
-						if tempO.DestinationFloor == order.DestinationFloor && order.Progress <= 3 {
+						if tempO.DestinationFloor == order.DestinationFloor &&
+							tempO.Progress <= commons.OpeningDoor1 &&
+							order.Progress <= commons.OpeningDoor1 {
 							unique = false
 							break
 						}
 					}
-					//To prevent sending multiple elevators. We are assuming infinitly sized elevator.
+					// We are assuming infinitly sized elevator.
 					if unique {
 						orders[order.ID] = order
 					}

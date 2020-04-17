@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"time"
 
 	"../commons"
@@ -30,6 +31,7 @@ func StartCSEDB(
 		select {
 		case message := <-reciveCSE:
 			{
+				fmt.Println("cseDB recived CSE", message)
 				message.Elevator.LastTimeOnline = time.Now()
 				switch message.What {
 				case commons.CSE:

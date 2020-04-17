@@ -49,6 +49,7 @@ func StartNetwork(
 					}
 				default:
 					{
+						//something wrong with code if anything else
 						fmt.Println("Semantic Bug")
 					}
 				}
