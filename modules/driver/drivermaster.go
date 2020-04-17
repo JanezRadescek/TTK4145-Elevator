@@ -233,6 +233,7 @@ func StartDriverMaster(
 		case <-time4Update:
 			{
 				fmt.Println("drivermaster time for update ")
+				myself.LastTimeOnline = time.Now()
 				tempM := commons.MessageStruct{
 					SenderID: ID,
 					What:     commons.CSE,

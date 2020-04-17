@@ -47,7 +47,10 @@ func StartOrdersDB(
 			}
 		case <-requestedCopy:
 			{
-				sendCopy <- orders
+				if len(sendCopy) != 0 {
+					sendCopy <- orders
+				}
+
 			}
 		}
 	}
