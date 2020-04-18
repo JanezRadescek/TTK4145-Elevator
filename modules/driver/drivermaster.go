@@ -100,7 +100,9 @@ func StartDriverMaster(
 								newOrder = false
 							}
 							//update orders
-							if order.Progress == commons.WaitingForDestination {
+							if order.Progress == commons.OpeningDoor1 ||
+								order.Progress == commons.ClosingDoor1 ||
+								order.Progress == commons.WaitingForDestination {
 								order.Progress = commons.Moving2destination
 								order.DestinationFloor = floor
 								//activeOrders[key] = order //probably donnt need it.
@@ -214,6 +216,7 @@ func StartDriverMaster(
 		case door := <-doorSensor:
 			{
 				fmt.Println("drivermaster doorsensor ", door)
+				//update orders
 				for _, order := range activeOrders {
 					if door {
 						if order.Progress < commons.OpeningDoor1 {
@@ -222,11 +225,16 @@ func StartDriverMaster(
 							order.Progress = commons.OpeningDoor2
 						}
 					} else {
-						if order.Progress == commons.OpeningDoor1 {
-							order.Progress = commons.ClosingDoor1
-							order.Progress = commons.WaitingForDestination //door closes in a instant
-						} else if order.Progress == commons.OpeningDoor2 {
-							order.Progress = commons.ClosingDoor2
+						switch order.Progress {
+						case commons.OpeningDoor1:
+							{
+								order.Progress = commons.ClosingDoor1 //door closes in a instant
+								order.Progress = commons.WaitingForDestination
+							}
+						case commons.OpeningDoor2:
+							{
+								order.Progress = commons.ClosingDoor2
+							}
 						}
 					}
 					order.LastUpdate = time.Now()
