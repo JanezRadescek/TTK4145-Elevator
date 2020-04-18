@@ -281,6 +281,7 @@ func StartDriverMaster(
 
 func findCurentOrder() {
 	//find closest order in the same direction as the "curent" order
+	copyActiveOrders := activeOrders //since watchdog is "slow" we might have newer versions in our activeOrders
 	activeOrders = make(map[string]commons.OrderStruct)
 	activeOrders[curentOrder.ID] = curentOrder
 	////myself.CurentDestination = curentOrder.DestinationFloor
@@ -295,6 +296,10 @@ func findCurentOrder() {
 		if (tempV1*vector > 0) && (tempV2*vector > 0) {
 			//fmt.Println("	order added to active")
 			activeOrders[key] = order
+			if quickOrder, exist := copyActiveOrders[key]; exist && order.Progress < quickOrder.Progress {
+				//do
+				activeOrders[key] = quickOrder
+			}
 			if tempV1*tempV1 < vector*vector {
 				curentOrder = order
 			}
