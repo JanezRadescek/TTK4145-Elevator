@@ -1,6 +1,8 @@
 package headhunter
 
 import (
+	"strings"
+
 	"../commons"
 )
 
@@ -30,7 +32,8 @@ func StartHeadHunter(
 			}
 			order.Contractor = contractor
 		} else {
-			//There is nothing we can do past PRogress commons.OpeningDoor1
+			//we cant distribute orders past Progress commons.OpeningDoor1 so the elevator that has people in it has to do it
+			order.Contractor = strings.Split(order.ID, ":")[0]
 		}
 		sendOrder <- order
 	}
