@@ -81,6 +81,8 @@ func StartDriverMaster(
 					//find other order we may do on the way to the oldest first and start doing it.
 					findCurentOrder()
 				} else {
+					//if there is no our orthers, there can be no our active orders
+					//activeOrders = make(map[string]commons.OrderStruct)
 					myself.Idle = true
 				}
 
@@ -241,6 +243,10 @@ func StartDriverMaster(
 						}
 						order.LastUpdate = time.Now()
 						activeOrders[key] = order //dont want to open the door twice because delay sending message.
+						if order.Progress == commons.ClosingDoor2 {
+							delete(allOurOrders, key)
+							delete(activeOrders, key)
+						}
 						message := commons.MessageStruct{
 							SenderID: ID,
 							What:     commons.Order,
