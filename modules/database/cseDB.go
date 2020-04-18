@@ -29,15 +29,21 @@ func StartCSEDB(
 		select {
 		case message := <-reciveCSE:
 			{
-				fmt.Println("cseDB recived CSE", message)
+
 				message.Elevator.LastTimeOnline = time.Now()
 				switch message.What {
 				case commons.CSE:
 					{
+						if elevators[message.SenderID].CurentFloor != message.Elevator.CurentFloor ||
+							elevators[message.SenderID].ID != message.Elevator.ID ||
+							elevators[message.SenderID].Idle != message.Elevator.Idle {
+							fmt.Println("cseDB recived NEW CSE", message)
+						}
 						elevators[message.SenderID] = message.Elevator
 					}
 				case commons.Malfunction:
 					{
+						fmt.Println("cseDB recived malfunction", message)
 						if elevator, ok := elevators[message.SenderID]; ok {
 							elevator.LastTimeChecked = message.Elevator.LastTimeChecked
 							elevators[message.SenderID] = elevator

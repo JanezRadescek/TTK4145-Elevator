@@ -38,7 +38,7 @@ func StartNetwork(
 		select {
 		case message = <-watchdogDriver2network:
 			{
-				fmt.Println("Network recived message from driver or watchdog ", message)
+				//fmt.Println("Network recived message from driver or watchdog ", message)
 			}
 		case message = <-reciver:
 			{
