@@ -24,7 +24,6 @@ func StartWatchDog(
 
 	for {
 		tempOrders := <-reciveCopy
-		fmt.Println("watchdog recived copy of orders")
 		//key is ID
 		ourOrders := make(map[string]commons.OrderStruct)
 
@@ -58,6 +57,7 @@ func StartWatchDog(
 			tempT = order.LastUpdate.Add(commons.MaxUserTime)
 			if tempT.Before(curentTime) && order.Progress == commons.WaitingForDestination {
 				//It looks like someone called cab but no one entered. Elevator is waiting for destination button which will not be pressed. so delete order.
+				fmt.Println("watchdog delited order in progress waitngfordestination")
 				order.Progress = commons.ClosingDoor2
 				sendMessege <- commons.MessageStruct{
 					SenderID: order.Contractor,

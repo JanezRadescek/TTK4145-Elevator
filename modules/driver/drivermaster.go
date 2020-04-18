@@ -95,7 +95,7 @@ func StartDriverMaster(
 						floor := button.Floor
 						fmt.Println("drivermaster recived cab to floor ", floor)
 						newOrder := true //two customers might wanna go to 2 diferent floor
-						for _, order := range activeOrders {
+						for key, order := range activeOrders {
 							if order.DestinationFloor == floor {
 								newOrder = false
 							}
@@ -106,7 +106,7 @@ func StartDriverMaster(
 								order.Progress = commons.Moving2destination
 								order.DestinationFloor = floor
 								order.LastUpdate = time.Now()
-								//activeOrders[key] = order //probably donnt need it.
+								activeOrders[key] = order //probably donnt need it.
 								tempM := commons.MessageStruct{
 									SenderID: ID,
 									What:     commons.Order,
@@ -217,8 +217,8 @@ func StartDriverMaster(
 		case door := <-doorSensor:
 			{
 				fmt.Println("drivermaster doorsensor ", door)
-
-				for _, order := range activeOrders {
+				//changesOrder := make([]commons.MessageStruct, 0)
+				for key, order := range activeOrders {
 					if myself.CurentFloor == order.DestinationFloor {
 						if door {
 							if order.Progress < commons.OpeningDoor1 {
@@ -240,7 +240,7 @@ func StartDriverMaster(
 							}
 						}
 						order.LastUpdate = time.Now()
-						//activeOrders[key] = order //dont needed if watchdog freaqueny high enough
+						activeOrders[key] = order //dont want to open the door twice because delay sending message.
 						message := commons.MessageStruct{
 							SenderID: ID,
 							What:     commons.Order,
@@ -248,8 +248,13 @@ func StartDriverMaster(
 							Order:    order,
 						}
 						sendMessege <- message
+						//changesOrder = append(changesOrder, message)
 					}
 				}
+				// for _, message := range changesOrder {
+				// 	sendMessege <- message
+				// }
+
 				if !door {
 					//before door closed the destination might allready be pressed.
 					findCurentOrder()
