@@ -54,19 +54,18 @@ func StartWatchDog(
 						Order:    order,
 					}
 				}
-				tempT = order.LastUpdate.Add(commons.MaxUserTime)
-				if tempT.Before(curentTime) && order.Progress == commons.WaitingForDestination {
-					//It looks like someone called cab but no one entered. Elevator is waiting for destination button which will not be pressed. so delete order.
-					order.Progress = commons.ClosingDoor2
-					sendMessege <- commons.MessageStruct{
-						SenderID: order.Contractor,
-						What:     commons.Order,
-						Local:    false,
-						Order:    order,
-					}
+			}
+			tempT = order.LastUpdate.Add(commons.MaxUserTime)
+			if tempT.Before(curentTime) && order.Progress == commons.WaitingForDestination {
+				//It looks like someone called cab but no one entered. Elevator is waiting for destination button which will not be pressed. so delete order.
+				order.Progress = commons.ClosingDoor2
+				sendMessege <- commons.MessageStruct{
+					SenderID: order.Contractor,
+					What:     commons.Order,
+					Local:    true,
+					Order:    order,
 				}
 			}
-
 		}
 
 		sendOurOrders <- ourOrders

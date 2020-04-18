@@ -296,6 +296,7 @@ func findCurentOrder() {
 
 		}
 	}
+	fmt.Println("	curent order", curentOrder.Progress, curentOrder.DestinationFloor)
 	//start doing curent order
 	switch curentOrder.Progress {
 	case commons.ButtonPressed, commons.Moving2customer, commons.Moving2destination:
