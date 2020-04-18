@@ -5,6 +5,7 @@ import "time"
 //Arbitrary numbers or something that makes sanse to change
 const NumFloors int = 4
 const PollRate time.Duration = 20 * time.Millisecond
+const RecoverTime = 100 * time.Millisecond //If we loose conection after how much time we try again
 const DoorOpenDuratation = 5 * time.Second
 const CheckDoorOpen = 100 * time.Millisecond     //used to check if doors are closed so we can move elevator.
 const WatchDogFrequency = 500 * time.Millisecond //After how much time we check if orders are being executed.

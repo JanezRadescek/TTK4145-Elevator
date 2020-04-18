@@ -19,6 +19,13 @@ func StartDriverSlave(
 	elevatorPort := commons.ElevatorPort
 	numFloors := commons.NumFloors
 
+	defer func() {
+		if r := recover(); r != nil {
+			time.Sleep(commons.RecoverTime)
+			fmt.Println("slave is restarting. probably because of the loss of connection.")
+			StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
+		}
+	}()
 	elevio.Init("localhost:"+elevatorPort, numFloors)
 
 	//move down so if we are inbetwen floors we can get floor sensor reading and get to know where we are
