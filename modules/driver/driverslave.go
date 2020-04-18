@@ -127,6 +127,7 @@ func StartDriverSlave(
 						if doorOpen {
 							time.Sleep(commons.CheckDoorOpen)
 						} else {
+							fmt.Println("driverslave sending to io direction ", d)
 							elevio.SetMotorDirection(motorDirection)
 							break
 						}

@@ -1,7 +1,6 @@
 package watchdog
 
 import (
-	"fmt"
 	"time"
 
 	"../commons"
@@ -24,7 +23,7 @@ func StartWatchDog(
 
 	for {
 		tempOrders := <-reciveCopy
-		fmt.Println("watchdog recived copy of orders", tempOrders)
+		//fmt.Println("watchdog recived copy of orders", tempOrders)
 		//key is ID
 		ourOrders := make(map[string]commons.OrderStruct)
 

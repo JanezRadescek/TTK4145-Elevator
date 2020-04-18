@@ -1,8 +1,6 @@
 package database
 
 import (
-	"fmt"
-
 	"../commons"
 )
 
@@ -18,7 +16,7 @@ func StartOrdersDB(
 		select {
 		case order := <-reciveOrder:
 			{
-				fmt.Println("ordersDB recived order", order)
+				//fmt.Println("ordersDB recived order", order)
 				if _, ok := orders[order.ID]; ok {
 					//order is finished when Progress is Closing Door 2. if customer doesnt press button in ~10s driver should skip to Closing2
 					if order.Progress == commons.ClosingDoor2 {

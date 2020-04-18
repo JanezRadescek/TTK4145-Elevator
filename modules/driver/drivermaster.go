@@ -60,7 +60,7 @@ func StartDriverMaster(
 		select {
 		case allOurOrders = <-reciveCopy:
 			{
-				fmt.Println("drivermaster recived copy", allOurOrders)
+				//fmt.Println("drivermaster recived copy", allOurOrders)
 
 				//find the oldest. or if it doesnt exist enjoy
 				if len(allOurOrders) != 0 {
@@ -102,7 +102,7 @@ func StartDriverMaster(
 							if order.Progress == commons.WaitingForDestination {
 								order.Progress = commons.Moving2destination
 								order.DestinationFloor = floor
-
+								//activeOrders[key] = order //probably donnt need it.
 								tempM := commons.MessageStruct{
 									SenderID: ID,
 									What:     commons.Order,
@@ -171,8 +171,10 @@ func StartDriverMaster(
 				fmt.Println("drivermaster recived floor ", floor)
 				myself.CurentFloor = floor
 				openDoor := false
+				//fmt.Println()
+				//fmt.Println("drivermaster printing active orders ")
 				for _, order := range activeOrders {
-
+					//fmt.Println("	drivermaster printing order ", order)
 					switch order.Progress {
 					case commons.ButtonPressed:
 						{
@@ -199,6 +201,7 @@ func StartDriverMaster(
 
 				}
 				if openDoor {
+
 					setOpenDoor <- true
 				}
 				if myself.Idle {
@@ -220,11 +223,13 @@ func StartDriverMaster(
 					} else {
 						if order.Progress == commons.OpeningDoor1 {
 							order.Progress = commons.ClosingDoor1
+							order.Progress = commons.WaitingForDestination //door closes in a instant
 						} else if order.Progress == commons.OpeningDoor2 {
 							order.Progress = commons.ClosingDoor2
 						}
 					}
 					order.LastUpdate = time.Now()
+					//activeOrders[key] = order //dont needed if watchdog freaqueny high enough
 					message := commons.MessageStruct{
 						SenderID: ID,
 						What:     commons.Order,
@@ -232,16 +237,16 @@ func StartDriverMaster(
 						Order:    order,
 					}
 					sendMessege <- message
-					if !door {
-						//before door closed the destination might allready be pressed.
-						findCurentOrder()
-					}
+				}
+				if !door {
+					//before door closed the destination might allready be pressed.
+					findCurentOrder()
 				}
 			}
 
 		case <-time4Update:
 			{
-				fmt.Println("drivermaster time for update ")
+				//fmt.Println("drivermaster time for update ")
 				myself.LastTimeOnline = time.Now()
 				tempM := commons.MessageStruct{
 					SenderID: ID,
@@ -260,12 +265,18 @@ func StartDriverMaster(
 func findCurentOrder() {
 	//find closest order in the same direction as the "curent" order
 	activeOrders = make(map[string]commons.OrderStruct)
+	activeOrders[curentOrder.ID] = curentOrder
 	////myself.CurentDestination = curentOrder.DestinationFloor
 	vector := curentOrder.DestinationFloor - myself.CurentFloor
+	//fmt.Println("drivermaster curent order ", curentOrder)
+	//fmt.Println("drivermaster findcurent order")
+	//fmt.Println("drivermaster printing allourorders")
 	for key, order := range allOurOrders {
+		fmt.Println("	order", order)
 		tempV1 := order.DestinationFloor - myself.CurentFloor
 		tempV2 := order.Direction
 		if (tempV1*vector > 0) && (tempV2*vector > 0) {
+			//fmt.Println("	order added to active")
 			activeOrders[key] = order
 			if tempV1*tempV1 < vector*vector {
 				curentOrder = order
