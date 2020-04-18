@@ -17,6 +17,7 @@ var activeOrders map[string]commons.OrderStruct
 var privateSendMessege chan<- commons.MessageStruct
 var privateID string
 var setMotorDirection chan int
+var setOpenDoor chan bool
 
 //TODO properly react to "disruptor" presing buttons at rendom times. (like what happens if somebody somehow pushes button for floor 5 before we even let him in?)
 
@@ -52,7 +53,7 @@ func StartDriverMaster(
 	doorSensor := make(chan bool)
 	//stopButton := make(chan bool) //solve this on IO level
 	setMotorDirection = make(chan int)
-	setOpenDoor := make(chan bool)
+	setOpenDoor = make(chan bool)
 
 	go StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
 
@@ -288,15 +289,23 @@ func findCurentOrder() {
 	switch curentOrder.Progress {
 	case commons.ButtonPressed, commons.Moving2customer, commons.Moving2destination:
 		{
-			//TODO
-			direction := -1
-			if myself.CurentFloor < curentOrder.DestinationFloor {
-				direction = 1
-			}
-			setMotorDirection <- direction
+			if myself.CurentFloor == curentOrder.DestinationFloor {
+				setOpenDoor <- true
+				if curentOrder.Progress <= commons.OpeningDoor1 {
+					curentOrder.Progress = commons.OpeningDoor1
+				} else {
+					curentOrder.Progress = commons.OpeningDoor2
+				}
+			} else {
+				direction := -1
+				if myself.CurentFloor < curentOrder.DestinationFloor {
+					direction = 1
+				}
+				setMotorDirection <- direction
 
-			if curentOrder.Progress == commons.ButtonPressed {
-				curentOrder.Progress = commons.Moving2customer
+				if curentOrder.Progress == commons.ButtonPressed {
+					curentOrder.Progress = commons.Moving2customer
+				}
 			}
 
 			message := commons.MessageStruct{
