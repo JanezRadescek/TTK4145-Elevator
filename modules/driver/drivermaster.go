@@ -203,6 +203,9 @@ func StartDriverMaster(
 				if openDoor {
 					setOpenDoor <- true
 				}
+				if myself.Idle {
+					setMotorDirection <- 0
+				}
 
 			}
 
@@ -282,6 +285,7 @@ func findCurentOrder() {
 				direction = 1
 			}
 			setMotorDirection <- direction
+
 			if curentOrder.Progress == commons.ButtonPressed {
 				curentOrder.Progress = commons.Moving2customer
 			}

@@ -44,13 +44,14 @@ func StartDriverSlave(
 			{
 				fmt.Println("driverslave button ", b)
 				newButton <- b
-				go elevio.SetButtonLamp(b.Button, b.Floor, true)
+				elevio.SetButtonLamp(b.Button, b.Floor, true)
 			}
 		case f := <-drv_floors:
 			{
 				fmt.Println("driverslave floor ", f)
 				floorSensor <- f
 				curentFloor = f
+				elevio.SetFloorIndicator(f)
 			}
 		case o := <-drv_obstr:
 			{
@@ -74,8 +75,8 @@ func StartDriverSlave(
 			{
 				fmt.Println("driverslave setopendoor ", true)
 				if !doorOpen {
+					doorOpen = true
 					go func() {
-						doorOpen = true
 						elevio.SetMotorDirection(elevio.MD_Stop)
 
 						//Is this how you open doors for customers to get in/out ??
