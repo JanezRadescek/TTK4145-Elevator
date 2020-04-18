@@ -169,7 +169,7 @@ func StartDriverMaster(
 
 		case floor := <-floorSensor:
 			{
-				fmt.Println("drivermaster recived floor ", floor)
+				//fmt.Println("drivermaster recived floor ", floor)
 				myself.CurentFloor = floor
 				openDoor := false
 				//fmt.Println()
@@ -273,7 +273,7 @@ func findCurentOrder() {
 	//fmt.Println("drivermaster findcurent order")
 	//fmt.Println("drivermaster printing allourorders")
 	for key, order := range allOurOrders {
-		fmt.Println("	order", order)
+		//fmt.Println("	order", order)
 		tempV1 := order.DestinationFloor - myself.CurentFloor
 		tempV2 := order.Direction
 		if (tempV1*vector > 0) && (tempV2*vector > 0) {
