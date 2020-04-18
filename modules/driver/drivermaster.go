@@ -9,8 +9,6 @@ import (
 	"./driver-go/elevio"
 )
 
-const sendUpdateDelay = 500 * time.Millisecond
-
 var myself commons.ElevatorStruct
 var curentOrder commons.OrderStruct
 var allOurOrders map[string]commons.OrderStruct
@@ -43,7 +41,7 @@ func StartDriverMaster(
 	time4Update := make(chan bool)
 	go func() {
 		for {
-			time.Sleep(sendUpdateDelay)
+			time.Sleep(commons.SendUpdateDelay)
 			time4Update <- true
 		}
 

@@ -22,6 +22,7 @@ func StartDriverSlave(
 	defer func() {
 		if r := recover(); r != nil {
 			time.Sleep(commons.RecoverTime)
+			fmt.Println()
 			fmt.Println("slave is restarting. probably because of the loss of connection.")
 			StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
 		}
