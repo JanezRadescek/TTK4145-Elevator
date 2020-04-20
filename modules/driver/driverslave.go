@@ -124,7 +124,7 @@ func StartDriverSlave(
 				}
 
 				//we dont want to stop in betwen floors.
-				if motorDirection != elevio.MD_Down {
+				if motorDirection != elevio.MD_Stop {
 					go func() {
 						for {
 							if doorOpen {
