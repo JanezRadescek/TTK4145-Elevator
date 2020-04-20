@@ -156,7 +156,7 @@ func StartDriverMaster(
 
 		case floor := <-floorSensor:
 			{
-				fmt.Println("drivermaster recived floor ", floor)
+				//fmt.Println("drivermaster recived floor ", floor)
 				myself.CurentFloor = floor
 				openDoor := false
 				//fmt.Println()

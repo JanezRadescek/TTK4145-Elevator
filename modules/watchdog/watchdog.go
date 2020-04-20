@@ -47,8 +47,10 @@ func StartWatchDog(
 				tempT = order.StartingTime.Add(commons.MaxOrderTime)
 
 				if order.Contractor == ID {
-					fmt.Println("watchdog our ID : ", ID, " con ID : ", order.Contractor)
+					//fmt.Println("watchdog our ID : ", ID, " con ID : ", order.Contractor)
 					//its pointless to check on ourself if we are performing to spec.
+					fmt.Println("watchdog our order ", order)
+					fmt.Println("watchdog our ID", ID)
 					ourOrders[order.ID] = order
 				} else {
 					if tempT.Before(curentTime) && order.Progress <= commons.OpeningDoor1 {

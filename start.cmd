@@ -3,7 +3,7 @@ echo varport
 START .\elevator\SimElevatorServer.exe --port %varport%
 START go run main.go %varport%
 
-timeout 1
+timeout 2
 
 SET varport=15658
 echo varport

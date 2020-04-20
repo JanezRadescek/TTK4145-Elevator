@@ -37,7 +37,7 @@ func StartCSEDB(
 						if elevators[message.SenderID].CurentFloor != message.Elevator.CurentFloor ||
 							elevators[message.SenderID].ID != message.Elevator.ID ||
 							elevators[message.SenderID].Idle != message.Elevator.Idle {
-							fmt.Println("cseDB recived NEW CSE, sender : ", message.SenderID, " elevator ID : ", message.Elevator.ID)
+							fmt.Println("cseDB recived NEW CSE, sender : ", message.SenderID, " elevator ID : ", message.Elevator.ID, " floor : ", message.Elevator.CurentFloor)
 						}
 						elevators[message.SenderID] = message.Elevator
 					}
