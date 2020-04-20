@@ -17,7 +17,7 @@ func main() {
 
 	arguments := os.Args
 	//
-	if len(arguments) > 0 {
+	if len(arguments) > 1 {
 		commons.ElevatorPort = arguments[1]
 	}
 
