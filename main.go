@@ -48,6 +48,8 @@ func main() {
 
 	ID := <-id
 
+	fmt.Println("ID : ", ID)
+
 	go database.StartCSEDB(
 		network2CSE,
 		headhunter2CSE,

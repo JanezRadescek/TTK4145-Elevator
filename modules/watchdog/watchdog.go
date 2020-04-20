@@ -45,7 +45,7 @@ func StartWatchDog(
 						Local:    true,
 						Elevator: commons.ElevatorStruct{LastTimeChecked: time.Now()},
 					}
-
+					order.Contractor = ""
 					sendMessege <- commons.MessageStruct{
 						SenderID: order.Contractor,
 						What:     commons.Order,
@@ -54,6 +54,7 @@ func StartWatchDog(
 					}
 				}
 			}
+			//someone can call cab but not enter. Elevator is waiting for destination button which will not be pressed. so delete order.
 			tempT = order.LastUpdate.Add(commons.MaxUserTime)
 			if tempT.Before(curentTime) && order.Progress == commons.WaitingForDestination {
 				//It looks like someone called cab but no one entered. Elevator is waiting for destination button which will not be pressed. so delete order.

@@ -106,7 +106,7 @@ func StartDriverSlave(
 			}
 		case d := <-setMotorDirection:
 			{
-				fmt.Println("driverslave set motor direction ", d)
+				//fmt.Println("driverslave set motor direction ", d)
 				switch d {
 				case 1:
 					{
@@ -127,7 +127,7 @@ func StartDriverSlave(
 						if doorOpen {
 							time.Sleep(commons.CheckDoorOpen)
 						} else {
-							fmt.Println("driverslave sending to io direction ", d)
+							//fmt.Println("driverslave sending to io direction ", d)
 							elevio.SetMotorDirection(motorDirection)
 							break
 						}

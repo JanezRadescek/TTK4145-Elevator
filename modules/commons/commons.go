@@ -10,9 +10,11 @@ const SendUpdateDelay = 3000 * time.Millisecond //After how much time do we send
 const DoorOpenDuratation = 5 * time.Second
 const CheckDoorOpen = 100 * time.Millisecond     //used to check if doors are closed so we can move elevator.
 const WatchDogFrequency = 500 * time.Millisecond //After how much time we check if orders are being executed. //500ms for production
-const MaxOrderTime = 30 * time.Second            //How much time does the elevator has before we try to find another elevator to do it.
+const MaxOrderTime = 30 * time.Second            //How much time does the elevator has to finish order before we declare him faulty and find new order
+const OrderUpdateTime = 6 * time.Second          //How much time does the elevator has to do something before we try to find another elevator to do it.
 const MaxUserTime = 5 * time.Second              //time we wait for user to press button, before we delete order.
 const MaxElevatorTime = -10 * time.Second        //If we dont get CSE for $s time we assume elevator is gone
+//const ContractorError = "ContractorError"		//
 
 var ElevatorPort string = "15657"
 
