@@ -46,7 +46,7 @@ func StartNetwork(
 				if message.SenderID == ID {
 					continue
 				} else {
-					//fmt.Println("Network recived message from internet ", message)
+
 				}
 			}
 		}
@@ -57,15 +57,10 @@ func StartNetwork(
 			}
 		case commons.Order:
 			{
-				//TODO check if updated orders id is same as contractor. it would be weird/buggy if someone else was doing work. OR would it?
 				sendOrder <- message.Order
 			}
-		default:
-			{
-				//something wrong with code if anything else
-				fmt.Println("Semantic Bug")
-			}
 		}
+
 		if !message.Local && message.SenderID == ID {
 			transmiter <- message
 		}

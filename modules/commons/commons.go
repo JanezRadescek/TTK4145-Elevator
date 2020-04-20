@@ -14,7 +14,6 @@ const MaxOrderTime = 30 * time.Second            //How much time does the elevat
 const OrderUpdateTime = 10 * time.Second         //How much time does the elevator has to do something before we try to find another elevator to do it.
 const MaxUserTime = 5 * time.Second              //time we wait for user to press button, before we delete order.
 const MaxElevatorTime = -10 * time.Second        //If we dont get CSE for $s time we assume elevator is gone
-//const ContractorError = "ContractorError"		//
 
 var ElevatorPort string = "15657"
 
@@ -23,17 +22,14 @@ var ElevatorPort string = "15657"
 type What int
 
 const (
-	Kill  What = 1 + iota //Not implemented
-	Spawn                 //Unncesary since we are not using tcp
-	Kick                  //Not implemented
-	CSE
+	CSE What = 1 + iota //Change of State of elevator
 	Order
 	Malfunction //when we need to tell cseDB that elevator is not doing his job
 )
 
 //MessageStruct is used for communication betwen nodes.
 type MessageStruct struct {
-	SenderID string //IP:PID
+	SenderID string //IP-PID
 	What     What
 	Local    bool //Its convient to use same "road" as if someone else send us CSE.
 	Elevator ElevatorStruct
@@ -43,7 +39,7 @@ type MessageStruct struct {
 //ElevatorStruct stores all relevant info.
 type ElevatorStruct struct {
 	ID              string
-	LastTimeOnline  time.Time
+	LastTimeOnline  time.Time //When did we recived last CSE from this elevator
 	LastTimeChecked time.Time //Time when we find out it does not work as it should. As such we assume it cant perform any order that are older than this time stamp. We do assume it go instantly fixed and as such it can start doing new orders
 	CurentFloor     int
 	//CurentDestination int
@@ -75,24 +71,3 @@ type OrderStruct struct {
 	LastUpdate       time.Time //when we wait for user to press button we need to know when did we close the door.
 	Contractor       string    //ID of elevator responsible for this order
 }
-
-// type PickButtonStruct struct {
-// 	Floor     int
-// 	Direction int
-// }
-
-type LampStruct struct {
-	Floor int
-	ON    bool
-}
-
-type State int
-
-const (
-	Idle State = 1 + iota
-	OpeningDoors
-	ClosingDoors
-	MovingUP
-	MovingDown
-	Waiting
-)

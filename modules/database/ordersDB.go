@@ -6,7 +6,7 @@ import (
 	"../commons"
 )
 
-//StartOrdersDB starts thread save data base for orders
+//StartOrdersDB starts data base for orders
 func StartOrdersDB(
 	reciveOrder <-chan commons.OrderStruct,
 	requestedCopy <-chan bool,
@@ -18,7 +18,6 @@ func StartOrdersDB(
 		select {
 		case order := <-reciveOrder:
 			{
-				//fmt.Println("ordersDB recived order", order)
 				if _, ok := orders[order.ID]; ok {
 					//order is finished when Progress is Closing Door 2.
 					if order.Progress == commons.ClosingDoor2 {
@@ -44,15 +43,11 @@ func StartOrdersDB(
 						fmt.Println("ordersDB recived new order ", order)
 						orders[order.ID] = order
 					}
-
 				}
 			}
 		case <-requestedCopy:
 			{
-				//fmt.Println("ordersDB sending orders #", len(orders))
-
 				sendCopy <- orders
-
 			}
 		}
 	}

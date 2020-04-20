@@ -1,7 +1,6 @@
 package watchdog
 
 import (
-	"fmt"
 	"time"
 
 	"../commons"
@@ -34,8 +33,6 @@ func StartWatchDog(
 			//someone can call cab but not enter. Elevator is waiting for destination button which will not be pressed. so delete order.
 			tempT := order.LastUpdate.Add(commons.MaxUserTime)
 			if tempT.Before(curentTime) && order.Progress == commons.WaitingForDestination {
-				//It looks like someone called cab but no one entered. Elevator is waiting for destination button which will not be pressed. so delete order.
-				fmt.Println("watchdog delited order in progress waitngfordestination")
 				order.Progress = commons.ClosingDoor2
 				sendMessege <- commons.MessageStruct{
 					SenderID: order.Contractor,
@@ -47,10 +44,7 @@ func StartWatchDog(
 				tempT = order.StartingTime.Add(commons.MaxOrderTime)
 
 				if order.Contractor == ID {
-					//fmt.Println("watchdog our ID : ", ID, " con ID : ", order.Contractor)
 					//its pointless to check on ourself if we are performing to spec.
-					fmt.Println("watchdog our order ", order)
-					fmt.Println("watchdog our ID", ID)
 					ourOrders[order.ID] = order
 				} else {
 					if tempT.Before(curentTime) && order.Progress <= commons.OpeningDoor1 {
@@ -74,6 +68,5 @@ func StartWatchDog(
 		}
 
 		sendOurOrders <- ourOrders
-
 	}
 }

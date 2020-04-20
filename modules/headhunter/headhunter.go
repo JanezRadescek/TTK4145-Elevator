@@ -1,7 +1,6 @@
 package headhunter
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -18,11 +17,9 @@ func StartHeadHunter(
 ) {
 	for {
 		order := <-reciveOrder
-		//fmt.Println("headhunter recived order", order)
 		tempT := order.LastUpdate.Add(commons.OrderUpdateTime)
-		//try to find new contractor if it is possible and if need him or we are just impatient
+		//try to find new contractor if it is possible AND if it is needed or we are just impatient
 		if order.Progress <= commons.OpeningDoor1 && (order.Contractor == "" || time.Now().After(tempT)) {
-			fmt.Println("headhunter doing ", "order.ID : ", order.ID, " order.Progress : ", order.Progress, " order.DestinationFloor : ", order.DestinationFloor, " order.Contractor : ", order.Contractor)
 			requestCopy <- true
 			elevators := <-reciveCopy
 			contractor := ID
@@ -38,10 +35,9 @@ func StartHeadHunter(
 					}
 				}
 			}
-			fmt.Println("headhunter new contractor : ", contractor)
 			order.Contractor = contractor
 		} else {
-			//we cant distribute orders past Progress commons.OpeningDoor1 so the elevator that has people in it has to do it
+			//we cant distribute orders past Progress commons.OpeningDoor1 so the elevator that olready has people in it has to do it.
 			order.Contractor = strings.Split(order.ID, ":")[0]
 		}
 		sendOrder <- order
