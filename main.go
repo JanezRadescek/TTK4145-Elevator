@@ -17,7 +17,9 @@ func main() {
 
 	arguments := os.Args
 	//
-	commons.ElevatorPort = arguments[1]
+	if len(arguments) > 0 {
+		commons.ElevatorPort = arguments[1]
+	}
 
 	//create graph
 
