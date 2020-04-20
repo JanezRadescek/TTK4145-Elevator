@@ -8,12 +8,16 @@ import (
 	"./driver-go/elevio"
 )
 
+var destination int
+var curentFloor int
+var motorDirection elevio.MotorDirection
+
 //StartDriverSlave operates elevator acording to the high level orders and report back sensor readings
 func StartDriverSlave(
 	newButton chan<- elevio.ButtonEvent,
 	floorSensor chan<- int,
 	doorSensor chan<- bool, //true if open
-	setMotorDirection <-chan int,
+	getDestination <-chan int,
 	setOpenDoor <-chan bool,
 ) {
 	elevatorPort := commons.ElevatorPort
@@ -24,17 +28,18 @@ func StartDriverSlave(
 			time.Sleep(commons.RecoverTime)
 			fmt.Println()
 			fmt.Println("slave is restarting. probably because of the loss of connection.")
-			StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
+			StartDriverSlave(newButton, floorSensor, doorSensor, getDestination, setOpenDoor)
 		}
 	}()
 	elevio.Init("localhost:"+elevatorPort, numFloors)
 
 	//move down so if we are inbetwen floors we can get floor sensor reading and get to know where we are
-	var motorDirection elevio.MotorDirection = elevio.MD_Down
+	motorDirection = elevio.MD_Down
 	elevio.SetMotorDirection(motorDirection)
 
 	var doorOpen bool = false
-	curentFloor := 0
+	destination = 0
+	curentFloor = 0
 
 	drv_buttons := make(chan elevio.ButtonEvent)
 	drv_floors := make(chan int)
@@ -60,6 +65,8 @@ func StartDriverSlave(
 				floorSensor <- f
 				curentFloor = f
 				elevio.SetFloorIndicator(f)
+
+				calculateDirection()
 				elevio.SetMotorDirection(motorDirection)
 			}
 		case o := <-drv_obstr:
@@ -105,40 +112,38 @@ func StartDriverSlave(
 					}()
 				}
 			}
-		case d := <-setMotorDirection:
+		case d := <-getDestination:
 			{
-				//fmt.Println("driverslave set motor direction ", d)
-				switch d {
-				case 1:
-					{
-						motorDirection = elevio.MD_Up
-					}
-				case -1:
-					{
-						motorDirection = elevio.MD_Down
-					}
-				case 0:
-					{
-						motorDirection = elevio.MD_Stop
-					}
-				}
-
-				//we dont want to stop in betwen floors.
-				if motorDirection != elevio.MD_Stop {
+				destination = d
+				calculateDirection()
+				//we dont want to stop in betwen floors. we will change(if needed) motor direction when we arive at the floor.
+				if destination != curentFloor {
+					//we wait for door to close
 					go func() {
 						for {
 							if doorOpen {
 								time.Sleep(commons.CheckDoorOpen)
 							} else {
-								//fmt.Println("driverslave sending to io direction ", d)
 								elevio.SetMotorDirection(motorDirection)
 								break
 							}
 						}
 					}()
 				}
+
 			}
 
 		}
+	}
+}
+
+func calculateDirection() {
+	if destination > curentFloor {
+		motorDirection = elevio.MD_Up
+	} else if destination == curentFloor {
+		motorDirection = elevio.MD_Stop
+	} else {
+		motorDirection = elevio.MD_Down
+
 	}
 }

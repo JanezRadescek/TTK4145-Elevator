@@ -15,7 +15,7 @@ var allOurOrders map[string]commons.OrderStruct
 
 var privateSendMessege chan<- commons.MessageStruct
 var privateID string
-var setMotorDirection chan int
+var setDestination chan int
 var setOpenDoor chan bool
 
 //StartDriverMaster takes next order we are asigned and and give high level instruction on what to do with it.
@@ -49,10 +49,10 @@ func StartDriverMaster(
 	newButton := make(chan elevio.ButtonEvent)
 	floorSensor := make(chan int)
 	doorSensor := make(chan bool)
-	setMotorDirection = make(chan int)
+	setDestination = make(chan int)
 	setOpenDoor = make(chan bool)
 
-	go StartDriverSlave(newButton, floorSensor, doorSensor, setMotorDirection, setOpenDoor)
+	go StartDriverSlave(newButton, floorSensor, doorSensor, setDestination, setOpenDoor)
 
 	for {
 		select {
@@ -267,7 +267,7 @@ func StartDriverMaster(
 func findCurentOrder() {
 	if len(allOurOrders) == 0 {
 		myself.Idle = true
-		setMotorDirection <- 0
+		setDestination <- myself.CurentFloor
 		return
 	}
 
@@ -312,11 +312,7 @@ func findCurentOrder() {
 					curentOrder.Progress = commons.OpeningDoor2
 				}
 			} else {
-				direction := -1
-				if myself.CurentFloor < curentOrder.DestinationFloor {
-					direction = 1
-				}
-				setMotorDirection <- direction
+				setDestination <- curentOrder.DestinationFloor
 
 				if curentOrder.Progress == commons.ButtonPressed {
 					curentOrder.Progress = commons.Moving2customer
