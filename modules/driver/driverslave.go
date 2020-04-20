@@ -66,8 +66,8 @@ func StartDriverSlave(
 				curentFloor = f
 				elevio.SetFloorIndicator(f)
 
-				calculateDirection()
-				elevio.SetMotorDirection(motorDirection)
+				fmt.Println("driverslave sending to IO direction ", motorDirection)
+				elevio.SetMotorDirection(elevio.MD_Stop)
 			}
 		case o := <-drv_obstr:
 			{
@@ -114,6 +114,7 @@ func StartDriverSlave(
 			}
 		case d := <-getDestination:
 			{
+				fmt.Println("driverslave recived destination ", d)
 				destination = d
 				calculateDirection()
 				//we dont want to stop in betwen floors. we will change(if needed) motor direction when we arive at the floor.
@@ -124,6 +125,7 @@ func StartDriverSlave(
 							if doorOpen {
 								time.Sleep(commons.CheckDoorOpen)
 							} else {
+								fmt.Println("driverslave sending to IO direction ", motorDirection)
 								elevio.SetMotorDirection(motorDirection)
 								break
 							}
@@ -140,10 +142,13 @@ func StartDriverSlave(
 func calculateDirection() {
 	if destination > curentFloor {
 		motorDirection = elevio.MD_Up
+		fmt.Println("slave calculate up")
 	} else if destination == curentFloor {
 		motorDirection = elevio.MD_Stop
+		fmt.Println("slave calculate stop")
 	} else {
 		motorDirection = elevio.MD_Down
-
+		fmt.Println("slave calculate down")
 	}
+
 }
