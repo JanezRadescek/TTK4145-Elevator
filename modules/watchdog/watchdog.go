@@ -47,6 +47,7 @@ func StartWatchDog(
 				tempT = order.StartingTime.Add(commons.MaxOrderTime)
 
 				if order.Contractor == ID {
+					fmt.Println("watchdog our ID : ", ID, " con ID : ", order.Contractor)
 					//its pointless to check on ourself if we are performing to spec.
 					ourOrders[order.ID] = order
 				} else {
