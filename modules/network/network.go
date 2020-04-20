@@ -38,16 +38,15 @@ func StartNetwork(
 		select {
 		case message = <-watchdogDriver2network:
 			{
-				//fmt.Println("Network recived message from driver or watchdog ", message)
+
 			}
 		case message = <-reciver:
 			{
 				// if we get our msg back from UDP broadcast just discard it, because we litteraly had the same message nanosecond ago.
 				if message.SenderID == ID {
-					//fmt.Println("Network discarding message")
 					continue
 				} else {
-					fmt.Println("Network recived message from internet ", message)
+					//fmt.Println("Network recived message from internet ", message)
 				}
 			}
 		}
@@ -67,7 +66,7 @@ func StartNetwork(
 				fmt.Println("Semantic Bug")
 			}
 		}
-		if !message.Local {
+		if !message.Local && message.SenderID == ID {
 			transmiter <- message
 		}
 	}

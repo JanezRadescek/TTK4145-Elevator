@@ -1,16 +1,11 @@
 # TTK4145-Elevator
 
-## Specifications 
-300IQ quote : _There can be no bugs, if there is no specifications_.
+This is Elevator project for course TTK4145 on NTNU.
+Focus of project is on desing and implementing code that works even if/when one part of elevators stops working.
 
-## known bugs
-
-## posible bugs
---somwhere in loop we might want to send multiple msg but chanel can accept only one at a time. Consequence deadlocks
+#Instraction
 
 
-## fixed bugs
+#Quote of the project
+_There can be no bugs, if there is no specifications_.
 
---order ID is set by driver
---once customers are in elevator they can press only multiple floors.
-	

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"./modules/commons"
 	"./modules/database"
@@ -13,6 +14,10 @@ import (
 
 func main() {
 	fmt.Println("Starting elevator.")
+
+	arguments := os.Args
+	//
+	commons.ElevatorPort = arguments[1]
 
 	//create graph
 
