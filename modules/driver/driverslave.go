@@ -126,7 +126,15 @@ func StartDriverSlave(
 					for {
 						if doorOpen {
 							time.Sleep(commons.CheckDoorOpen)
-						} else {
+						} else if curentFloor == 0 && motorDirection == elevio.MD_Down {
+							motorDirection = elevio.MD_Stop
+							elevio.SetMotorDirection(motorDirection)
+							break
+						} else if curentFloor == 4 && motorDirection == elevio.MD_Up{
+							motorDirection = elevio.MD_Stop
+							elevio.SetMotorDirection(motorDirection)
+							break
+						}else {
 							fmt.Println("driverslave sending to io direction ", d)
 							elevio.SetMotorDirection(motorDirection)
 							break
