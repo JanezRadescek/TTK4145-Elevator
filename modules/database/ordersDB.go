@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+
 	"../commons"
 )
 
@@ -18,12 +20,13 @@ func StartOrdersDB(
 			{
 				//fmt.Println("ordersDB recived order", order)
 				if _, ok := orders[order.ID]; ok {
-					//order is finished when Progress is Closing Door 2. if customer doesnt press button in ~10s driver should skip to Closing2
+					//order is finished when Progress is Closing Door 2.
 					if order.Progress == commons.ClosingDoor2 {
 						delete(orders, order.ID)
 					} else {
-						//TODO check if recived order is newer version of order than what we allready have
-						orders[order.ID] = order
+						if orders[order.ID].Progress <= order.Progress {
+							orders[order.ID] = order
+						}
 					}
 				} else {
 					//to prevent a mess if multiple users want to go with same elevator to the same destination
@@ -38,6 +41,7 @@ func StartOrdersDB(
 					}
 					// We are assuming infinitly sized elevator.
 					if unique {
+						fmt.Println("ordersDB recived new order ", order)
 						orders[order.ID] = order
 					}
 
