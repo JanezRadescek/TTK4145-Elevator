@@ -60,6 +60,7 @@ func StartDriverSlave(
 				floorSensor <- f
 				curentFloor = f
 				elevio.SetFloorIndicator(f)
+				elevio.SetMotorDirection(motorDirection)
 			}
 		case o := <-drv_obstr:
 			{
@@ -122,17 +123,20 @@ func StartDriverSlave(
 					}
 				}
 
-				go func() {
-					for {
-						if doorOpen {
-							time.Sleep(commons.CheckDoorOpen)
-						} else {
-							//fmt.Println("driverslave sending to io direction ", d)
-							elevio.SetMotorDirection(motorDirection)
-							break
+				//we dont want to stop in betwen floors.
+				if motorDirection != elevio.MD_Down {
+					go func() {
+						for {
+							if doorOpen {
+								time.Sleep(commons.CheckDoorOpen)
+							} else {
+								//fmt.Println("driverslave sending to io direction ", d)
+								elevio.SetMotorDirection(motorDirection)
+								break
+							}
 						}
-					}
-				}()
+					}()
+				}
 			}
 
 		}

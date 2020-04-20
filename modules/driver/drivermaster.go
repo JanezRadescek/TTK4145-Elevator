@@ -191,15 +191,8 @@ func StartDriverMaster(
 
 					setOpenDoor <- true
 				}
-				if len(allOurOrders) != 0 {
-					findCurentOrder()
-				} else {
-					myself.Idle = true
-				}
-				if myself.Idle {
-					setMotorDirection <- 0
-				}
 
+				findCurentOrder()
 			}
 
 		case door := <-doorSensor:
@@ -297,7 +290,6 @@ func findCurentOrder() {
 	fmt.Println("drivermaster findcurentorder")
 	//fmt.Println("drivermaster printing allourorders")
 	for _, order := range allOurOrders {
-		fmt.Println("	order", order.Progress, order.DestinationFloor)
 		tempV1 := order.DestinationFloor - myself.CurentFloor
 		tempV2 := order.Direction
 		if (tempV1*vector > 0) && (tempV2*vector > 0) {

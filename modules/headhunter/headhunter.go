@@ -1,6 +1,7 @@
 package headhunter
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ func StartHeadHunter(
 		tempT := order.LastUpdate.Add(commons.OrderUpdateTime)
 		//try to find new contractor if it is possible and if need him or we are just impatient
 		if order.Progress <= commons.OpeningDoor1 && (order.Contractor == "" || time.Now().After(tempT)) {
+			fmt.Println("headhunter doing ", "order.ID : ", order.ID, " order.Progress : ", order.Progress, " order.DestinationFloor : ", order.DestinationFloor, " order.Contractor : ", order.Contractor)
 			requestCopy <- true
 			elevators := <-reciveCopy
 			contractor := ID
