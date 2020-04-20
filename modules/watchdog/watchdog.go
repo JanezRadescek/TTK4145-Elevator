@@ -31,31 +31,8 @@ func StartWatchDog(
 
 		for _, order := range tempOrders {
 
-			tempT := order.StartingTime.Add(commons.MaxOrderTime)
-
-			//its pointless to check on ourself if we are performing to spec.
-			if order.Contractor == ID {
-				ourOrders[order.ID] = order
-			} else {
-				if tempT.Before(curentTime) && order.Progress <= commons.OpeningDoor1 {
-					//Once the progress is 4 or more we cant switch elevator. In case of Failure at this stage unfortunatly  customer must die:)
-					sendMessege <- commons.MessageStruct{
-						SenderID: order.Contractor, //we seend messege in the name of contractor.
-						What:     commons.Malfunction,
-						Local:    true,
-						Elevator: commons.ElevatorStruct{LastTimeChecked: time.Now()},
-					}
-					order.Contractor = ""
-					sendMessege <- commons.MessageStruct{
-						SenderID: order.Contractor,
-						What:     commons.Order,
-						Local:    true,
-						Order:    order,
-					}
-				}
-			}
 			//someone can call cab but not enter. Elevator is waiting for destination button which will not be pressed. so delete order.
-			tempT = order.LastUpdate.Add(commons.MaxUserTime)
+			tempT := order.LastUpdate.Add(commons.MaxUserTime)
 			if tempT.Before(curentTime) && order.Progress == commons.WaitingForDestination {
 				//It looks like someone called cab but no one entered. Elevator is waiting for destination button which will not be pressed. so delete order.
 				fmt.Println("watchdog delited order in progress waitngfordestination")
@@ -65,6 +42,30 @@ func StartWatchDog(
 					What:     commons.Order,
 					Local:    true,
 					Order:    order,
+				}
+			} else {
+				tempT = order.StartingTime.Add(commons.MaxOrderTime)
+
+				if order.Contractor == ID {
+					//its pointless to check on ourself if we are performing to spec.
+					ourOrders[order.ID] = order
+				} else {
+					if tempT.Before(curentTime) && order.Progress <= commons.OpeningDoor1 {
+						//Once the progress is 4 or more we cant switch elevator. In case of Failure at this stage unfortunatly  customer must die:)
+						sendMessege <- commons.MessageStruct{
+							SenderID: order.Contractor, //we seend messege in the name of contractor.
+							What:     commons.Malfunction,
+							Local:    true,
+							Elevator: commons.ElevatorStruct{LastTimeChecked: time.Now()},
+						}
+						order.Contractor = ""
+						sendMessege <- commons.MessageStruct{
+							SenderID: order.Contractor,
+							What:     commons.Order,
+							Local:    true,
+							Order:    order,
+						}
+					}
 				}
 			}
 		}

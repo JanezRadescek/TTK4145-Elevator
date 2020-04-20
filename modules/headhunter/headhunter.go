@@ -36,9 +36,9 @@ func StartHeadHunter(
 						vector = tempV
 						contractor = tempE.ID
 					}
-
 				}
 			}
+			fmt.Println("headhunter new contractor : ", contractor)
 			order.Contractor = contractor
 		} else {
 			//we cant distribute orders past Progress commons.OpeningDoor1 so the elevator that has people in it has to do it
