@@ -12,14 +12,11 @@ import (
 var myself commons.ElevatorStruct
 var curentOrder commons.OrderStruct
 var allOurOrders map[string]commons.OrderStruct
-var activeOrders map[string]commons.OrderStruct
 
 var privateSendMessege chan<- commons.MessageStruct
 var privateID string
 var setMotorDirection chan int
 var setOpenDoor chan bool
-
-//TODO properly react to "disruptor" presing buttons at rendom times. (like what happens if somebody somehow pushes button for floor 5 before we even let him in?)
 
 //StartDriverMaster takes next order we are asigned and and give high level instruction on what to do with it.
 func StartDriverMaster(
@@ -51,7 +48,6 @@ func StartDriverMaster(
 	newButton := make(chan elevio.ButtonEvent)
 	floorSensor := make(chan int)
 	doorSensor := make(chan bool)
-	//stopButton := make(chan bool) //solve this on IO level
 	setMotorDirection = make(chan int)
 	setOpenDoor = make(chan bool)
 
@@ -59,33 +55,18 @@ func StartDriverMaster(
 
 	for {
 		select {
-		case allOurOrders = <-reciveCopy:
+		case newOrders := <-reciveCopy:
 			{
-				//fmt.Println("drivermaster recived copy", allOurOrders)
-
-				//find the oldest. or if it doesnt exist enjoy
-				if len(allOurOrders) != 0 {
-					oldestTime := time.Now()
-					for _, order := range allOurOrders {
-						oldestTime = order.StartingTime
-						curentOrder = order
-						myself.Idle = false
-						break
+				//since watchdog is "slow" we might have newer versions in our allOurOrders
+				for key, quickOrder := range allOurOrders {
+					if order, ok := newOrders[key]; ok && quickOrder.Progress >= order.Progress {
+						order.Progress = quickOrder.Progress
+						newOrders[key] = order
 					}
-					for _, order := range allOurOrders {
-						if order.StartingTime.Before(oldestTime) {
-							oldestTime = order.StartingTime
-							curentOrder = order
-						}
-					}
-					//find other order we may do on the way to the oldest first and start doing it.
-					findCurentOrder()
-				} else {
-					//if there is no our orthers, there can be no our active orders
-					//activeOrders = make(map[string]commons.OrderStruct)
-					myself.Idle = true
 				}
+				allOurOrders = newOrders
 
+				findCurentOrder()
 			}
 
 		case button := <-newButton:
@@ -97,7 +78,7 @@ func StartDriverMaster(
 						floor := button.Floor
 						fmt.Println("drivermaster recived cab to floor ", floor)
 						newOrder := true //two customers might wanna go to 2 diferent floor
-						for key, order := range activeOrders {
+						for key, order := range allOurOrders {
 							if order.DestinationFloor == floor {
 								newOrder = false
 							}
@@ -108,7 +89,7 @@ func StartDriverMaster(
 								order.Progress = commons.Moving2destination
 								order.DestinationFloor = floor
 								order.LastUpdate = time.Now()
-								activeOrders[key] = order //probably donnt need it.
+								allOurOrders[key] = order
 								tempM := commons.MessageStruct{
 									SenderID: ID,
 									What:     commons.Order,
@@ -179,7 +160,7 @@ func StartDriverMaster(
 				openDoor := false
 				//fmt.Println()
 				//fmt.Println("drivermaster printing active orders ")
-				for _, order := range activeOrders {
+				for _, order := range allOurOrders {
 					//fmt.Println("	drivermaster printing order ", order)
 					switch order.Progress {
 					case commons.ButtonPressed:
@@ -210,6 +191,11 @@ func StartDriverMaster(
 
 					setOpenDoor <- true
 				}
+				if len(allOurOrders) != 0 {
+					findCurentOrder()
+				} else {
+					myself.Idle = true
+				}
 				if myself.Idle {
 					setMotorDirection <- 0
 				}
@@ -220,7 +206,7 @@ func StartDriverMaster(
 			{
 				fmt.Println("drivermaster doorsensor ", door)
 				//changesOrder := make([]commons.MessageStruct, 0)
-				for key, order := range activeOrders {
+				for key, order := range allOurOrders {
 					if myself.CurentFloor == order.DestinationFloor {
 						if door {
 							if order.Progress < commons.OpeningDoor1 {
@@ -242,10 +228,9 @@ func StartDriverMaster(
 							}
 						}
 						order.LastUpdate = time.Now()
-						activeOrders[key] = order //dont want to open the door twice because delay sending message.
+						allOurOrders[key] = order //dont want to open the door twice because delay sending message.
 						if order.Progress == commons.ClosingDoor2 {
 							delete(allOurOrders, key)
-							delete(activeOrders, key)
 						}
 						message := commons.MessageStruct{
 							SenderID: ID,
@@ -286,33 +271,42 @@ func StartDriverMaster(
 }
 
 func findCurentOrder() {
+	if len(allOurOrders) == 0 {
+		myself.Idle = true
+		setMotorDirection <- 0
+		return
+	}
+
+	myself.Idle = false
+	for _, order := range allOurOrders {
+		curentOrder = order
+		break
+	}
+	//find oldest order
+	oldestTime := curentOrder.StartingTime
+	for _, order := range allOurOrders {
+		if order.StartingTime.Before(oldestTime) {
+			oldestTime = order.StartingTime
+			curentOrder = order
+		}
+	}
+
 	//find closest order in the same direction as the "curent" order
-	copyActiveOrders := activeOrders //since watchdog is "slow" we might have newer versions in our activeOrders
-	activeOrders = make(map[string]commons.OrderStruct)
-	activeOrders[curentOrder.ID] = curentOrder
-	////myself.CurentDestination = curentOrder.DestinationFloor
 	vector := curentOrder.DestinationFloor - myself.CurentFloor
 	//fmt.Println("drivermaster curent order ", curentOrder)
 	fmt.Println("drivermaster findcurentorder")
 	//fmt.Println("drivermaster printing allourorders")
-	for key, order := range allOurOrders {
+	for _, order := range allOurOrders {
 		fmt.Println("	order", order.Progress, order.DestinationFloor)
 		tempV1 := order.DestinationFloor - myself.CurentFloor
 		tempV2 := order.Direction
 		if (tempV1*vector > 0) && (tempV2*vector > 0) {
-			//fmt.Println("	order added to active")
-			activeOrders[key] = order
-			if quickOrder, exist := copyActiveOrders[key]; exist && order.Progress < quickOrder.Progress {
-				//do
-				activeOrders[key] = quickOrder
-			}
 			if tempV1*tempV1 < vector*vector {
 				curentOrder = order
 			}
-
 		}
 	}
-	fmt.Println("	curent order", curentOrder.Progress, curentOrder.DestinationFloor)
+	fmt.Println("	curent order	progress: ", curentOrder.Progress, " destination : ", curentOrder.DestinationFloor)
 	//start doing curent order
 	switch curentOrder.Progress {
 	case commons.ButtonPressed, commons.Moving2customer, commons.Moving2destination:
@@ -348,12 +342,6 @@ func findCurentOrder() {
 		{
 			//DO  nothing. slave will close door let us now about closing, and then we still cant continue because we need destination.
 		}
-	default:
-		{
-			//no curent order
-			setMotorDirection <- 0
-		}
-
 	}
 
 }
