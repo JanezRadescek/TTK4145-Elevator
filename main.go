@@ -16,7 +16,6 @@ func main() {
 	fmt.Println("Starting elevator.")
 
 	arguments := os.Args
-	//
 	if len(arguments) > 1 {
 		commons.ElevatorPort = arguments[1]
 	}
