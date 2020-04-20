@@ -30,6 +30,7 @@ func StartDriverMaster(
 	myself = commons.ElevatorStruct{}
 	myself.LastTimeChecked = time.Now()
 	myself.Idle = true
+	myself.ID = ID
 
 	//key is ID
 	allOurOrders = make(map[string]commons.OrderStruct)
@@ -287,7 +288,7 @@ func findCurentOrder() {
 	//find closest order in the same direction as the "curent" order
 	vector := curentOrder.DestinationFloor - myself.CurentFloor
 	//fmt.Println("drivermaster curent order ", curentOrder)
-	fmt.Println("drivermaster findcurentorder")
+	//fmt.Println("drivermaster findcurentorder")
 	//fmt.Println("drivermaster printing allourorders")
 	for _, order := range allOurOrders {
 		tempV1 := order.DestinationFloor - myself.CurentFloor
